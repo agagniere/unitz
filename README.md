@@ -37,13 +37,9 @@ const energy = engine_power.to(J);
 ```
 Will result in the compilation error:
 ```zig
-thread [...] panic: reached unreachable code
-[...]/src/root.zig:233:52: 0x100c4cd4f in to__anon_707 (test)
-            if (!unit_from.is_compatible(unit_to)) unreachable; // Units are only interconvertible if they measure the same kind of dimension
-                                                   ^
-[...]/foo.zig:29:35: 0x100c4cad3 in test_0 (test)
-    const energy = engine_power.to(J);
-                                  ^
+src/root.zig:233:61: error: Units are only interconvertible if they measure the same kind of dimension
+            comptime if (!unit_from.is_compatible(unit_to)) @compileError("Units are only interconvertible if they measure the same kind of dimension");
+                                                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
 No conversion is done implicitly, the value stored in memory is exactly the one provided to the constructor.
