@@ -227,7 +227,7 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
             return .{ .value = self.value / other.value };
         }
 
-        pub fn to(self: Self, dest: type) dest {
+        pub inline fn to(self: Self, dest: type) dest {
             const unit_from = Self.unit;
             const unit_to = dest.unit;
             comptime if (!unit_from.is_compatible(unit_to)) @compileError("Units are only interconvertible if they measure the same kind of dimension");
@@ -235,7 +235,7 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
             return dest.init(self.value * factor);
         }
 
-        pub fn to_val(self: Self, dest: type) T {
+        pub inline fn to_val(self: Self, dest: type) T {
             return self.to(dest).val();
         }
     };
