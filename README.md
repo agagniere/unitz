@@ -40,6 +40,9 @@ Will result in the compilation error:
 src/root.zig:233:61: error: Units are only interconvertible if they measure the same kind of dimension
             comptime if (!unit_from.is_compatible(unit_to)) @compileError("Units are only interconvertible if they measure the same kind of dimension");
                                                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+foo.zig:29:35: note: called from here
+    const energy = engine_power.to(J);
+                   ~~~~~~~~~~~~~~~^~~
 ```
 
 No conversion is done implicitly, the value stored in memory is exactly the one provided to the constructor.
