@@ -211,6 +211,10 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
             return self.value;
         }
 
+        pub fn negate(self: Self) Self {
+            return Self.init(-self.value);
+        }
+
         pub fn add(self: Self, other: Self) Self {
             return Self.init(self.value + other.value);
         }
@@ -225,6 +229,10 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
 
         pub fn div(self: Self, other: anytype) Quantity(Self.unit.div(@TypeOf(other).unit), T) {
             return .{ .value = self.value / other.value };
+        }
+
+        pub fn pow(self: Self, power: comptime_int) Quantity(Self.unit.pow(power), T) {
+            return .{ .value = std.math.pow(self.value, power) };
         }
 
         pub inline fn to(self: Self, dest: type) dest {
@@ -245,6 +253,7 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
 pub fn quantities(T: type) type {
     const u = units;
     return struct {
+        pub const unitless = Quantity(u.one, T);
         pub const radian = Quantity(u.radian, T);
         pub const turn = Quantity(u.turn, T);
         pub const arcdegree = Quantity(u.arcdegree, T);
@@ -357,4 +366,10 @@ test Quantity {
 
     try std.testing.expectApproxEqAbs(33_000.0, one_hp.to_val(@"ft.lbf/min"), 0.001);
     try std.testing.expectApproxEqAbs(745.699_871_582, one_hp.to_val(W), 0.000_1);
+}
+
+pub const eval = @import("evalUnit.zig");
+
+test {
+    std.testing.refAllDeclsRecursive(@This());
 }

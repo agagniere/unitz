@@ -116,3 +116,9 @@ zig build docs
 python -m http.server 8000 -d zig-out/docs
 open "http://localhost:8000"
 ```
+
+## Bump dependencies
+
+```shell
+zig fetch --save git+https://github.com/InKryption/comath#main
+```

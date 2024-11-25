@@ -7,11 +7,15 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    _ = b.addModule(NAME, .{
+    const comath = b.dependency("comath", .{ .target = target, .optimize = optimize }).module("comath");
+
+    const unitz = b.addModule(NAME, .{
         .root_source_file = b.path(ROOT_FILE),
         .target = target,
         .optimize = optimize,
     });
+
+    unitz.addImport("comath", comath);
 
     { // Test
         const test_step = b.step("test", "Run unit tests");
@@ -20,6 +24,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
         });
+        lib_unit_tests.root_module.addImport("comath", comath);
         const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
         test_step.dependOn(&run_lib_unit_tests.step);
     }
