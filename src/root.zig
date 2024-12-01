@@ -142,10 +142,12 @@ pub const units = struct {
     pub const minute = second.scale(60);
     pub const hour = minute.scale(60);
     pub const day = hour.scale(24);
+    pub const week = day.scale(7);
 
     pub const square_meter = meter.pow(2);
     pub const cubic_meter = meter.pow(3);
     pub const kilogram_per_cubic_meter = kilogram.div(cubic_meter);
+    pub const liter = meter.prefix(.deci).pow(3);
 
     pub const hertz = one.div(second);
     pub const newton = kilogram.mul(meter).div(second.pow(2));
@@ -166,6 +168,7 @@ pub const units = struct {
     pub const yard = foot.scale(3);
     pub const mile = yard.scale(1_760);
     pub const nautical_mile = meter.scale(1_852);
+    pub const furlong = yard.scale(220);
 
     pub const dram = gram.scale(1.771_845_195_312_5);
     pub const ounce = dram.scale(16.0);
@@ -176,6 +179,8 @@ pub const units = struct {
     pub const knot = nautical_mile.div(hour);
 
     pub const imperial_horsepower = watt.scale(745.699_871_582_270_22);
+    pub const gauss = tesla.scale(1e-4);
+    pub const calorie = joule.scale(4.184);
 };
 
 test Unit {

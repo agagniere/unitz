@@ -2,6 +2,8 @@ const std = @import("std");
 const comath = @import("comath");
 const unitz = @import("root.zig");
 
+const p = unitz.Prefix;
+
 const relations = .{
     .@"+" = comath.relation(.left, 1),
     .@"-" = comath.relation(.left, 1),
@@ -11,8 +13,22 @@ const relations = .{
 
     .@"^" = comath.relation(.left, 3),
 };
-
 const BinaryOperators = std.meta.FieldEnum(@TypeOf(relations));
+
+const prefixes = .{
+    .T = p.tera,
+    .G = p.giga,
+    .M = p.mega,
+    .k = p.kilo,
+    .h = p.hecto,
+    .d = p.deci,
+    .c = p.centi,
+    .m = p.milli,
+    .u = p.micro,
+    .n = p.nano,
+    .p = p.pico,
+};
+const PrefixSymbols = std.meta.FieldEnum(@TypeOf(prefixes));
 
 pub inline fn unitzContext(identifiers: anytype) UnitzContext(@TypeOf(identifiers)) {
     return .{ .identifiers = identifiers };
@@ -50,7 +66,7 @@ pub fn UnitzContext(comptime _builtin_identifiers: type) type {
         pub fn evalNumberLiteral(comptime src: []const u8) EvalNumberLiteral(src) {
             return switch (std.zig.parseNumberLiteral(src)) {
                 .int => |val| val,
-                .big_int => @compileError("Big Ints are not supported yet"),
+                .big_int => @compileError("Big Ints are not supported for now"),
                 .float => std.fmt.parseFloat(f128, src) catch |err| @compileError(@errorName(err)),
                 .failure => |failure| @compileError(switch (failure) {
                     .leading_zero => "Invalid leading zeroes in '" ++ src ++ "'",
@@ -90,12 +106,16 @@ pub fn UnitzContext(comptime _builtin_identifiers: type) type {
         pub fn EvalIdent(comptime ident: []const u8) type {
             if (@hasField(Self.builtin_identifiers, ident))
                 return type;
+            if (@hasField(Self.builtin_identifiers, ident[1..]) and @hasField(PrefixSymbols, ident[0..1]))
+                return type;
             return noreturn;
         }
 
         pub fn evalIdent(ctx: Self, comptime ident: []const u8) !EvalIdent(ident) {
             if (@hasField(Self.builtin_identifiers, ident))
                 return @field(ctx.identifiers, ident);
+            if (@hasField(Self.builtin_identifiers, ident[1..]) and @hasField(PrefixSymbols, ident[0..1]))
+                return @field(ctx.identifiers, ident[1..]).prefix(@field(prefixes, ident[0..1]));
             comptime unreachable;
         }
 
@@ -126,7 +146,7 @@ pub fn UnitzContext(comptime _builtin_identifiers: type) type {
     };
 }
 
-pub inline fn evalUnitSI(comptime expr: []const u8) !type {
+pub inline fn evalUnit(comptime expr: []const u8) !type {
     const u = unitz.units;
     const ctx = unitzContext(.{
         .m = u.meter,
@@ -134,6 +154,10 @@ pub inline fn evalUnitSI(comptime expr: []const u8) !type {
         .kg = u.kilogram,
         .A = u.ampere,
         .K = u.kelvin,
+
+        .g = u.gram,
+        .t = u.tonne,
+        .l = u.liter,
 
         .Hz = u.hertz,
         .N = u.newton,
@@ -148,21 +172,53 @@ pub inline fn evalUnitSI(comptime expr: []const u8) !type {
         .Wb = u.weber,
         .T = u.tesla,
         .H = u.henry,
+
+        .min = u.minute,
+        .h = u.hour,
+        .d = u.day,
+        .wk = u.week,
+
+        .rad = u.radian,
+        .deg = u.arcdegree,
+
+        .G = u.gauss,
+        .cal = u.calorie,
+        .ft = u.foot,
+        .fur = u.furlong,
+        .hp = u.imperial_horsepower,
+        .inch = u.inch,
+        .kn = u.knot,
+        .lb = u.pound,
+        .mi = u.mile,
+        .nmi = u.nautical_mile,
+        .oz = u.ounce,
+        .yd = u.yard,
     });
     return comath.eval(expr, ctx, .{});
 }
 
-test UnitzContext {
-    //comptime try std.testing.expectEqual(f128, comptime_float);
+pub inline fn evalQuantity(comptime T: type, comptime expr: []const u8) !type {
+    return unitz.Quantity(evalUnit(expr), T);
+}
 
+test UnitzContext {
     const u = unitz.units;
 
-    const J_per_s = try evalUnitSI("J / s");
+    const J_per_s = try evalUnit("J / s");
     comptime try std.testing.expectEqual(u.watt, J_per_s);
 
-    const kg_per_m3 = try evalUnitSI("kg / m^3");
+    const kg_per_m3 = try evalUnit("kg / m^3");
     comptime try std.testing.expectEqual(u.kilogram_per_cubic_meter, kg_per_m3);
 
-    const per_s = try evalUnitSI("1 / s");
+    const per_s = try evalUnit("1 / s");
     comptime try std.testing.expectEqual(u.hertz, per_s);
+
+    const milligram = try evalUnit("mg");
+    comptime try std.testing.expectEqual(u.gram.prefix(.milli), milligram);
+
+    const kilojoule = try evalUnit("kJ");
+    comptime try std.testing.expectEqual(u.joule.prefix(.kilo), kilojoule);
+
+    const kilowatthour = try evalUnit("kW * h");
+    comptime try std.testing.expectEqual(u.joule.prefix(.mega).scale(3.6), kilowatthour);
 }
