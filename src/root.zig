@@ -373,7 +373,10 @@ test Quantity {
     try std.testing.expectApproxEqAbs(745.699_871_582, one_hp.to_val(W), 0.000_1);
 }
 
-pub const eval = @import("evalUnit.zig");
+const eval_unit = @import("evalUnit.zig");
+
+pub const evalUnit = eval_unit.evalUnit;
+pub const evalQuantity = eval_unit.evalQuantity;
 
 test {
     std.testing.refAllDeclsRecursive(@This());

@@ -146,7 +146,7 @@ pub fn UnitzContext(comptime _builtin_identifiers: type) type {
     };
 }
 
-pub inline fn evalUnit(comptime expr: []const u8) !type {
+pub inline fn evalUnit(comptime expr: []const u8, inputs: anytype) type {
     const u = unitz.units;
     const ctx = unitzContext(.{
         .m = u.meter,
@@ -194,31 +194,40 @@ pub inline fn evalUnit(comptime expr: []const u8) !type {
         .oz = u.ounce,
         .yd = u.yard,
     });
-    return comath.eval(expr, ctx, .{});
+    return comath.eval(expr, ctx, inputs) catch unreachable;
 }
 
-pub inline fn evalQuantity(comptime T: type, comptime expr: []const u8) !type {
-    return unitz.Quantity(evalUnit(expr), T);
+pub inline fn evalQuantity(comptime T: type, comptime expr: []const u8, inputs: anytype) type {
+    return unitz.Quantity(evalUnit(expr, inputs), T);
 }
 
 test UnitzContext {
     const u = unitz.units;
 
-    const J_per_s = try evalUnit("J / s");
+    const J_per_s = evalUnit("J / s", .{});
     comptime try std.testing.expectEqual(u.watt, J_per_s);
 
-    const kg_per_m3 = try evalUnit("kg / m^3");
+    const kg_per_m3 = evalUnit("kg / m^3", .{});
     comptime try std.testing.expectEqual(u.kilogram_per_cubic_meter, kg_per_m3);
 
-    const per_s = try evalUnit("1 / s");
+    const per_s = evalUnit("1 / s", .{});
     comptime try std.testing.expectEqual(u.hertz, per_s);
 
-    const milligram = try evalUnit("mg");
+    const milligram = evalUnit("mg", .{});
     comptime try std.testing.expectEqual(u.gram.prefix(.milli), milligram);
 
-    const kilojoule = try evalUnit("kJ");
+    const kilojoule = evalUnit("kJ", .{});
     comptime try std.testing.expectEqual(u.joule.prefix(.kilo), kilojoule);
 
-    const kilowatthour = try evalUnit("kW * h");
+    const kilowatthour = evalUnit("kW * h", .{});
     comptime try std.testing.expectEqual(u.joule.prefix(.mega).scale(3.6), kilowatthour);
+}
+
+test evalQuantity {
+    const slug = evalUnit("32.174_049 * lb", .{});
+    const lbf = evalQuantity(f32, "ft * slug / s^2", .{ .slug = slug });
+    const centinewton = evalQuantity(f32, "cN", .{});
+
+    const one_lbf = lbf.init(1);
+    try std.testing.expectApproxEqAbs(444.822_161_5, one_lbf.to_val(centinewton), 0.000_000_1);
 }
