@@ -208,7 +208,7 @@ test UnitzContext {
     comptime try std.testing.expectEqual(u.watt, J_per_s);
 
     const kg_per_m3 = evalUnit("kg / m^3", .{});
-    comptime try std.testing.expectEqual(u.kilogram_per_cubic_meter, kg_per_m3);
+    comptime try std.testing.expectEqual(u.kilogram.div(u.meter.pow(3)), kg_per_m3);
 
     const per_s = evalUnit("1 / s", .{});
     comptime try std.testing.expectEqual(u.hertz, per_s);
