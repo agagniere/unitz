@@ -12,7 +12,7 @@ const units = @import("unitz").quantities(f32);
 const m = units.meter;
 const s = units.second;
 const kt = units.knot;
-const @"km/h" = units.kilometer_per_hour;
+const @"km/h" = unitz.evalQuantity(f32, "km / h", .{});
 
 fn aircraft_speed(distance: m, duration: s) kt {
 	const speed = distance.div(duration); // value is in m/s
@@ -47,45 +47,69 @@ foo.zig:29:35: note: called from here
 
 No conversion is done implicitly, the value stored in memory is exactly the one provided to the constructor.
 
-## Advanced usage
+## Defining your own units
 
-You can define your own units:
+This library does not provide all variations of standard units: meter and hour are provided, but kilometer and kilometer per hour is not. Instead, you can define any unit you want from its definition, using prefixes if needed:
+
+```zig
+const nanosecond = unitz.evalQuantity(f32, "ns", .{});
+const @"kg/m3" = unitz.evalQuantity(f32, "kg / m^3", .{});
+const kilowatthour = unitz.evalQuantity(f32, "kW * h", .{});
+const Cal = unitz.evalQuantity(f32, "kcal", .{}); // large calorie
+```
+
+## Simple example
+
+```zig
+const std = @import("std");
+const unitz = @import("unitz");
+const q = unitz.quantities(f32);
+
+const m = q.meter;
+const kg = q.kilogram;
+const lb = q.pound;
+const cm = unitz.evalQuantity(f32, "cm", .{});
+const @"kg/m²" = unitz.evalQuantity(f32, "kg / m^2", .{});
+
+fn body_mass_index(height: m, weight: kg) @"kg/m²" {
+	return weight.div(height.pow(2));
+}
+
+pub fn main() void {
+	const height = cm.init(162);
+	const weight = lb.init(124);
+	const bmi = body_mass_index(height.to(m), weight.to(kg));
+	std.debug.print("BMI: {}", .{bmi.val()});
+}
+```
+
+## Advanced example
 
 ```zig
 const unitz = @import("unitz");
-const Quantity = unitz.Quantity;
 
-const my_units = struct {
-	const u = unitz.units; // here we use the abstract units, that don't store a value
-	const ft = u.foot;
-	const lb = u.pound;
-	const s = u.second;
-	const N = u.newton;
-
-	const pound_force = ft.mul(lb).div(s.pow(2)).scale(32.174_049);
-	const pound_force_seconds = pound_force.mul(s);
-	const newton_seconds = N.mul(s);
-	const microsecond = s.prefix(.micro);
-};
-
-// We can now create quantities, that is a value expressed relatively to its unit
-const lbf = Quantity(my_units.pound_force, f32);
-const @"lbf.s" = Quantity(my_units.pound_force_seconds, f32);
-const @"N.s" = Quantity(my_units.newton_seconds, f32);
-const @"μs" = Quantity(my_units.microsecond, f32);
-
+const slug = unitz.evalUnit("32.174_049 * lb", .{});
+const lbf = unitz.evalQuantity(f32, "ft * slug / s^2", .{ .slug = slug });
+const @"lbf.s" = unitz.evalQuantity(f32, "lbf * s", .{ .lbf = lbf.unit });
+const @"N.s" = unitz.evalQuantity(f32, "N * s", .{});
+const @"μs" = unitz.evalQuantity(f32, "us", .{});
 
 fn compute_impulse(force: lbf, delta: @"μs") @"lbf.s" {
-	return force.mul(delta).to(@"lbf.s"); // we need to convert from lbf.us to lbf.s, if we forget, a compilation error occurs
+    return force.mul(delta).to(@"lbf.s"); // we need to convert from lbf.us to lbf.s, if we forget, a \
+compilation error occurs
 }
 
 fn compute_trajectory(impulse: @"N.s") void {
-	// ...
+    // ...
 }
 
-const force = lbf.init(123.0);
-const delta = @"μs".init(5);
-compute_trajectory(compute_impulse(force, delta)); // compilation error ! Adding .to(@"N.s") will fix it
+pub fn main() void {
+    const force = lbf.init(123.0);
+    const delta = @"μs".init(45.0);
+
+    compute_trajectory(compute_impulse(force, delta)); // compilation error ! Adding .to(@"N.s") will \
+fix it
+}
 ```
 
 And just like that, you can avoid [crashing into the atmosphere](https://en.wikipedia.org/wiki/Mars_Climate_Orbiter#Cause_of_failure)
@@ -115,4 +139,10 @@ zig build docs
 # Then serve locally, for example:
 python -m http.server 8000 -d zig-out/docs
 open "http://localhost:8000"
+```
+
+## Bump dependencies
+
+```shell
+zig fetch --save git+https://github.com/InKryption/comath#main
 ```

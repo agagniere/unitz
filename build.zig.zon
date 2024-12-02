@@ -1,11 +1,18 @@
 .{
     .name = "unitz",
     .version = "0.1.0",
+    .dependencies = .{
+        .comath = .{
+            .url = "git+https://github.com/InKryption/comath?ref=main#d2dad5a16422dfc15ed1ecf3bd93f0115a4e0192",
+            .hash = "12204d9528280144364d4f511e7edf6f0f417d840ec8179fe8179dbe4c8c62ffe991",
+        },
+    },
     .minimum_zig_version = "0.13.0",
     .paths = .{
         "build.zig",
         "build.zig.zon",
         "src/root.zig",
+        "src/evalUnit.zig",
         "README.md",
         "LICENSE",
     },

@@ -116,6 +116,7 @@ pub fn Unit(
             return Self.scale(prefixFactor(_prefix));
         }
 
+        /// Two units are compatible if they measure the same kind of dimension
         pub fn is_compatible(other: type) bool {
             return Self.meter == other.meter and Self.second == other.second and Self.kilogram == other.kilogram and Self.ampere == other.ampere and Self.kelvin == other.kelvin;
         }
@@ -138,14 +139,12 @@ pub const units = struct {
     pub const gram = kilogram.scale(1e-3);
     /// Metric ton
     pub const tonne = kilogram.scale(1e3);
+    pub const liter = meter.prefix(.deci).pow(3);
 
     pub const minute = second.scale(60);
     pub const hour = minute.scale(60);
     pub const day = hour.scale(24);
-
-    pub const square_meter = meter.pow(2);
-    pub const cubic_meter = meter.pow(3);
-    pub const kilogram_per_cubic_meter = kilogram.div(cubic_meter);
+    pub const week = day.scale(7);
 
     pub const hertz = one.div(second);
     pub const newton = kilogram.mul(meter).div(second.pow(2));
@@ -166,16 +165,16 @@ pub const units = struct {
     pub const yard = foot.scale(3);
     pub const mile = yard.scale(1_760);
     pub const nautical_mile = meter.scale(1_852);
+    pub const furlong = yard.scale(220);
 
     pub const dram = gram.scale(1.771_845_195_312_5);
     pub const ounce = dram.scale(16.0);
     pub const pound = ounce.scale(16.0);
 
-    pub const meter_per_second = meter.div(second);
-    pub const kilometer_per_hour = meter.prefix(.kilo).div(hour);
     pub const knot = nautical_mile.div(hour);
-
     pub const imperial_horsepower = watt.scale(745.699_871_582_270_22);
+    pub const gauss = tesla.scale(1e-4);
+    pub const calorie = joule.scale(4.184);
 };
 
 test Unit {
@@ -192,6 +191,8 @@ test Unit {
 
     try comptime std.testing.expectEqual(u.meter.scale(0.3048), u.foot);
     try comptime std.testing.expectEqual(u.meter.scale(0.9144), u.yard);
+
+    try comptime std.testing.expectEqual(u.meter.scale(1000), u.meter.prefix(.kilo));
 }
 
 /// A quantity is a measure expressed relatively to its unit
@@ -211,6 +212,10 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
             return self.value;
         }
 
+        pub fn negate(self: Self) Self {
+            return Self.init(-self.value);
+        }
+
         pub fn add(self: Self, other: Self) Self {
             return Self.init(self.value + other.value);
         }
@@ -225,6 +230,10 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
 
         pub fn div(self: Self, other: anytype) Quantity(Self.unit.div(@TypeOf(other).unit), T) {
             return .{ .value = self.value / other.value };
+        }
+
+        pub fn pow(self: Self, power: comptime_int) Quantity(Self.unit.pow(power), T) {
+            return .{ .value = std.math.pow(T, self.value, power) };
         }
 
         pub inline fn to(self: Self, dest: type) dest {
@@ -245,6 +254,7 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
 pub fn quantities(T: type) type {
     const u = units;
     return struct {
+        pub const unitless = Quantity(u.one, T);
         pub const radian = Quantity(u.radian, T);
         pub const turn = Quantity(u.turn, T);
         pub const arcdegree = Quantity(u.arcdegree, T);
@@ -258,14 +268,12 @@ pub fn quantities(T: type) type {
         pub const gram = Quantity(u.gram, T);
         /// Metric ton
         pub const tonne = Quantity(u.tonne, T);
+        pub const liter = Quantity(u.liter, T);
 
         pub const minute = Quantity(u.minute, T);
         pub const hour = Quantity(u.hour, T);
         pub const day = Quantity(u.day, T);
-
-        pub const square_meter = Quantity(u.square_meter, T);
-        pub const cubic_meter = Quantity(u.cubic_meter, T);
-        pub const kilogram_per_cubic_meter = Quantity(u.kilogram_per_cubic_meter, T);
+        pub const week = Quantity(u.week, T);
 
         pub const hertz = Quantity(u.hertz, T);
         pub const newton = Quantity(u.newton, T);
@@ -286,16 +294,16 @@ pub fn quantities(T: type) type {
         pub const yard = Quantity(u.yard, T);
         pub const mile = Quantity(u.mile, T);
         pub const nautical_mile = Quantity(u.nautical_mile, T);
+        pub const furlong = Quantity(u.furlong, T);
 
         pub const dram = Quantity(u.dram, T);
         pub const ounce = Quantity(u.ounce, T);
         pub const pound = Quantity(u.pound, T);
 
-        pub const meter_per_second = Quantity(u.meter_per_second, T);
-        pub const kilometer_per_hour = Quantity(u.kilometer_per_hour, T);
         pub const knot = Quantity(u.knot, T);
-
         pub const imperial_horsepower = Quantity(u.imperial_horsepower, T);
+        pub const gauss = Quantity(u.gauss, T);
+        pub const calorie = Quantity(u.calorie, T);
     };
 }
 
@@ -303,8 +311,8 @@ test Quantity {
     const u = quantities(f32);
     const m = u.meter;
     const s = u.second;
-    const @"m/s" = u.meter_per_second;
-    const m2 = u.square_meter;
+    const @"m/s" = Quantity(u.meter.unit.div(u.second.unit), f32);
+    const m2 = Quantity(u.meter.unit.pow(2), f32);
     const lb = u.pound;
     const N = u.newton;
     const W = u.watt;
@@ -357,4 +365,13 @@ test Quantity {
 
     try std.testing.expectApproxEqAbs(33_000.0, one_hp.to_val(@"ft.lbf/min"), 0.001);
     try std.testing.expectApproxEqAbs(745.699_871_582, one_hp.to_val(W), 0.000_1);
+}
+
+const eval_unit = @import("evalUnit.zig");
+
+pub const evalUnit = eval_unit.evalUnit;
+pub const evalQuantity = eval_unit.evalQuantity;
+
+test {
+    std.testing.refAllDeclsRecursive(@This());
 }
