@@ -1,7 +1,6 @@
 const std = @import("std");
 
 const NAME = "unitz";
-const ROOT_FILE = "src/root.zig";
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -10,23 +9,16 @@ pub fn build(b: *std.Build) void {
     const comath = b.dependency("comath", .{ .target = target, .optimize = optimize }).module("comath");
 
     const unitz = b.addModule(NAME, .{
-        .root_source_file = b.path(ROOT_FILE),
+        .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = optimize,
     });
-
     unitz.addImport("comath", comath);
 
     { // Test
         const test_step = b.step("test", "Run unit tests");
-        const lib_unit_tests = b.addTest(.{
-            .root_source_file = b.path(ROOT_FILE),
-            .target = target,
-            .optimize = optimize,
-        });
-        lib_unit_tests.root_module.addImport("comath", comath);
-        const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
-        test_step.dependOn(&run_lib_unit_tests.step);
+        const lib_unit_tests = b.addTest(.{ .root_module = unitz });
+        test_step.dependOn(&b.addRunArtifact(lib_unit_tests).step);
     }
 
     { // Documentation
@@ -34,9 +26,7 @@ pub fn build(b: *std.Build) void {
 
         const docs_obj = b.addObject(.{
             .name = NAME,
-            .root_source_file = b.path(ROOT_FILE),
-            .target = target,
-            .optimize = .Debug,
+            .root_module = unitz,
         });
 
         const install_docs = b.addInstallDirectory(.{
