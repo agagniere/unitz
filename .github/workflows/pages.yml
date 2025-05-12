@@ -20,10 +20,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Generate documentation
-        run: zig build docs
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+      - run: zig build docs
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
