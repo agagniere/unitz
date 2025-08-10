@@ -8,10 +8,19 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        zig: ["master", "0.14.1"]
+        exclude:
+          - os: macos-latest
+            zig: 0.14.1
+    runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Zig Compiler
+      - name: Setup Zig Compiler to ${{matrix.zig}}
         uses: mlugg/setup-zig@v2
+        with:
+          version: ${{matrix.zig}}
       - name: Run tests
         run: zig build test --summary all

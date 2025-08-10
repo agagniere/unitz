@@ -42,6 +42,8 @@ pub fn UnitzContext(comptime _builtin_identifiers: type) type {
 
         identifiers: Self.builtin_identifiers,
 
+        pub const matchUnOp = comath.ctx.Null.matchUnOp;
+
         /// Should return `true` for any string of symbols corresponding to a recognized binary operator.
         pub inline fn matchBinOp(comptime str: []const u8) bool {
             return @hasField(BinaryOperators, str);

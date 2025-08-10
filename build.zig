@@ -6,7 +6,7 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const comath = b.dependency("comath", .{ .target = target, .optimize = optimize }).module("comath");
+    const comath = b.dependency("comath", .{}).module("comath");
 
     const unitz = b.addModule(NAME, .{
         .root_source_file = b.path("src/root.zig"),

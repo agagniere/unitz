@@ -5,8 +5,8 @@
     .minimum_zig_version = "0.14.0",
     .dependencies = .{
         .comath = .{
-            .url = "git+https://github.com/InKryption/comath?ref=main#d0459e71f5bca0aa0780fe4f2b169b9c42e1d99a",
-            .hash = "comath-0.0.1-wKZ2n56sAQByqbIeswGF_mDH9C_xyy1a2bDw--eyLDI1",
+            .url = "git+https://github.com/InKryption/comath?ref=main#e14797bc2569b649238722258e48fbe93324f189",
+            .hash = "comath-0.1.0-wKZ2n9PfAQDUcYFCPrnKeL1i-4nLN8vWYoBsKEYElmDz",
         },
     },
     .paths = .{
