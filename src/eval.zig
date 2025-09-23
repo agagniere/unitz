@@ -42,6 +42,7 @@ pub fn UnitzContext(comptime _builtin_identifiers: type) type {
 
         identifiers: Self.builtin_identifiers,
 
+        /// Should return `true` for any string of symbols corresponding to a recognized unary operator.
         pub const matchUnOp = comath.ctx.Null.matchUnOp;
 
         /// Should return `true` for any string of symbols corresponding to a recognized binary operator.
