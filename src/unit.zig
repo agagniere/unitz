@@ -156,6 +156,8 @@ pub const units = struct {
     // Temperature
     /// K
     pub const kelvin = Unit(0, 0, 0, 0, 1, 1.0);
+    /// R
+    pub const rankine = kelvin.scale(5.0 / 9.0);
 
     // Frequency
     /// Hz

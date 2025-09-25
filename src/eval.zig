@@ -186,6 +186,7 @@ pub inline fn evalUnit(comptime expr: []const u8, inputs: anytype) type {
 
         // Temperature
         .K = u.kelvin,
+        .R = u.rankine,
 
         // Frequency
         .Hz = u.hertz,

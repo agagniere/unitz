@@ -90,6 +90,8 @@ test Quantity {
     const lb = u.pound;
     const N = u.newton;
     const W = u.watt;
+    const R = u.rankine;
+    const K = u.kelvin;
 
     // Compute a speed from a distance and a duration
     const D = m.init(23);
@@ -115,6 +117,15 @@ test Quantity {
     try std.testing.expectApproxEqAbs(3.2808, one_meter.to_val(ft), 0.000_1);
     try std.testing.expectApproxEqAbs(0.000_539_96, one_meter.to_val(nmi), 0.000_000_01);
     try std.testing.expectApproxEqAbs(6_076.115_49, one_naticalMile.to_val(ft), 0.000_001);
+
+    // Convert temperatures
+    const brine_freezing_point: R = .init(459.67);
+    const water_freezing_point: K = .init(273.15);
+    const water_boiling_point: K = .init(273.15 + 99.9839);
+
+    try std.testing.expectApproxEqAbs(255.37, brine_freezing_point.to_val(K), 0.01);
+    try std.testing.expectApproxEqAbs(491.67, water_freezing_point.to_val(R), 0.01);
+    try std.testing.expectApproxEqAbs(671.6410, water_boiling_point.to_val(R), 0.0001);
 
     // Define new units and perform conversions
     // We recompute the pound-force from its definition
