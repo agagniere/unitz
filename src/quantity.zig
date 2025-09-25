@@ -56,60 +56,30 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
     };
 }
 
-pub fn quantities(T: type) type {
-    const u = unit_namespace.units;
-    return struct {
-        pub const unitless = Quantity(u.one, T);
-        pub const radian = Quantity(u.radian, T);
-        pub const turn = Quantity(u.turn, T);
-        pub const arcdegree = Quantity(u.arcdegree, T);
-
-        pub const meter = Quantity(u.meter, T);
-        pub const second = Quantity(u.second, T);
-        pub const kilogram = Quantity(u.kilogram, T);
-        pub const ampere = Quantity(u.ampere, T);
-        pub const kelvin = Quantity(u.kelvin, T);
-
-        pub const gram = Quantity(u.gram, T);
-        /// Metric ton
-        pub const tonne = Quantity(u.tonne, T);
-        pub const liter = Quantity(u.liter, T);
-
-        pub const minute = Quantity(u.minute, T);
-        pub const hour = Quantity(u.hour, T);
-        pub const day = Quantity(u.day, T);
-        pub const week = Quantity(u.week, T);
-
-        pub const hertz = Quantity(u.hertz, T);
-        pub const newton = Quantity(u.newton, T);
-        pub const pascal = Quantity(u.pascal, T);
-        pub const joule = Quantity(u.joule, T);
-        pub const watt = Quantity(u.watt, T);
-        pub const coulomb = Quantity(u.coulomb, T);
-        pub const volt = Quantity(u.volt, T);
-        pub const farad = Quantity(u.farad, T);
-        pub const ohm = Quantity(u.ohm, T);
-        pub const siemens = Quantity(u.siemens, T);
-        pub const weber = Quantity(u.weber, T);
-        pub const tesla = Quantity(u.tesla, T);
-        pub const henry = Quantity(u.henry, T);
-
-        pub const inch = Quantity(u.inch, T);
-        pub const foot = Quantity(u.foot, T);
-        pub const yard = Quantity(u.yard, T);
-        pub const mile = Quantity(u.mile, T);
-        pub const nautical_mile = Quantity(u.nautical_mile, T);
-        pub const furlong = Quantity(u.furlong, T);
-
-        pub const dram = Quantity(u.dram, T);
-        pub const ounce = Quantity(u.ounce, T);
-        pub const pound = Quantity(u.pound, T);
-
-        pub const knot = Quantity(u.knot, T);
-        pub const imperial_horsepower = Quantity(u.imperial_horsepower, T);
-        pub const gauss = Quantity(u.gauss, T);
-        pub const calorie = Quantity(u.calorie, T);
+/// Generate default quantities from default units
+fn Quantities(T: type) type {
+    const declarations = @typeInfo(unit_namespace.units).@"struct".decls;
+    var fields: [declarations.len]std.builtin.Type.StructField = undefined;
+    for (&fields, declarations) |*field, decl| {
+        field.name = decl.name;
+        field.type = type;
+        field.is_comptime = true;
+        field.alignment = @alignOf(T);
+        field.default_value_ptr = &Quantity(@field(unit_namespace.units, decl.name), T);
+    }
+    const s: std.builtin.Type.Struct = .{
+        .layout = .auto,
+        .fields = &fields,
+        .decls = &.{},
+        .is_tuple = false,
     };
+    const t: std.builtin.Type = .{ .@"struct" = s };
+    return @Type(t);
+}
+
+/// To see the list of quantities, refer to the list of units in the `units` namespace
+pub fn quantities(T: type) Quantities(T) {
+    return .{};
 }
 
 test Quantity {
