@@ -96,68 +96,10 @@ pub fn Unit(
 /// Abstract units used to tag Quantities
 pub const units = struct {
     pub const one = Unit(0, 0, 0, 0, 0, 1.0);
-    /// rad
-    pub const radian = one;
-    pub const semicircle = radian.scale(std.math.pi);
-    /// rev
-    pub const revolution = semicircle.scale(2);
-    /// deg
-    pub const arcdegree = semicircle.scale(1.0 / 180.0);
 
+    // Distance
     /// m
     pub const meter = Unit(1, 0, 0, 0, 0, 1.0);
-    /// s
-    pub const second = Unit(0, 1, 0, 0, 0, 1.0);
-    /// kg
-    pub const kilogram = Unit(0, 0, 1, 0, 0, 1.0);
-    /// A
-    pub const ampere = Unit(0, 0, 0, 1, 0, 1.0);
-    /// K
-    pub const kelvin = Unit(0, 0, 0, 0, 1, 1.0);
-
-    /// g
-    pub const gram = kilogram.scale(1e-3);
-    /// t (Metric ton)
-    pub const tonne = kilogram.scale(1e3);
-    /// l
-    pub const liter = meter.prefix(.deci).pow(3);
-
-    /// min
-    pub const minute = second.scale(60);
-    /// h
-    pub const hour = minute.scale(60);
-    /// d
-    pub const day = hour.scale(24);
-    /// wk
-    pub const week = day.scale(7);
-
-    /// Hz
-    pub const hertz = one.div(second);
-    /// N
-    pub const newton = kilogram.mul(meter).div(second.pow(2));
-    /// Pa
-    pub const pascal = newton.div(meter.pow(2));
-    /// J
-    pub const joule = newton.mul(meter);
-    /// W
-    pub const watt = joule.div(second);
-    /// C
-    pub const coulomb = second.mul(ampere);
-    /// V
-    pub const volt = joule.div(coulomb);
-    /// F
-    pub const farad = coulomb.div(volt);
-    /// Ohm
-    pub const ohm = volt.div(ampere);
-    /// S
-    pub const siemens = ampere.div(volt);
-    /// Wb
-    pub const weber = joule.div(ampere);
-    /// T
-    pub const tesla = weber.div(meter.pow(2));
-    /// H
-    pub const henry = weber.div(second);
-
     /// inch
     pub const inch = meter.scale(0.0254);
     /// ft
@@ -171,6 +113,34 @@ pub const units = struct {
     /// fur
     pub const furlong = yard.scale(220);
 
+    // Angle
+    /// rad
+    pub const radian = meter.div(meter);
+    pub const semicircle = radian.scale(std.math.pi);
+    /// rev
+    pub const revolution = semicircle.scale(2);
+    /// deg
+    pub const arcdegree = semicircle.scale(1.0 / 180.0);
+
+    // Duration
+    /// s
+    pub const second = Unit(0, 1, 0, 0, 0, 1.0);
+    /// min
+    pub const minute = second.scale(60);
+    /// h
+    pub const hour = minute.scale(60);
+    /// d
+    pub const day = hour.scale(24);
+    /// wk
+    pub const week = day.scale(7);
+
+    // Mass
+    /// kg
+    pub const kilogram = Unit(0, 0, 1, 0, 0, 1.0);
+    /// g
+    pub const gram = kilogram.scale(1e-3);
+    /// t (Metric ton)
+    pub const tonne = kilogram.scale(1e3);
     pub const dram = gram.scale(1.771_845_195_312_5);
     /// oz
     pub const ounce = dram.scale(16.0);
@@ -178,18 +148,28 @@ pub const units = struct {
     pub const pound = ounce.scale(16.0);
     /// slug
     pub const slug = pound.scale(32.174_05);
+
+    // Electric current
+    /// A
+    pub const ampere = Unit(0, 0, 0, 1, 0, 1.0);
+
+    // Temperature
+    /// K
+    pub const kelvin = Unit(0, 0, 0, 0, 1, 1.0);
+
+    // Frequency
+    /// Hz
+    pub const hertz = one.div(second);
+
+    // Force
+    /// N
+    pub const newton = kilogram.mul(meter).div(second.pow(2));
     /// lbf
     pub const pound_force = slug.mul(foot).div(second.pow(2));
 
-    /// kt
-    pub const knot = nautical_mile.div(hour);
-    /// hp
-    pub const imperial_horsepower = watt.scale(745.699_871_582_270_22);
-    /// G
-    pub const gauss = tesla.scale(1e-4);
-    /// cal
-    pub const calorie = joule.scale(4.184);
-
+    // Pressure
+    /// Pa
+    pub const pascal = newton.div(meter.pow(2));
     /// bar
     pub const bar = pascal.prefix(.kilo).scale(100);
     /// at
@@ -198,6 +178,47 @@ pub const units = struct {
     pub const standard_atmosphere = pascal.scale(101325);
     /// Torr
     pub const torr = standard_atmosphere.scale(1.0 / 760.0);
+
+    // Energy
+    /// J
+    pub const joule = newton.mul(meter);
+    /// cal
+    pub const calorie = joule.scale(4.184);
+
+    // Power
+    /// W
+    pub const watt = joule.div(second);
+    /// hp
+    pub const imperial_horsepower = watt.scale(745.699_871_582_270_22);
+
+    // Magnetic flux density
+    /// T
+    pub const tesla = weber.div(meter.pow(2));
+    /// G
+    pub const gauss = tesla.scale(1e-4);
+
+    // Volume
+    /// l
+    pub const liter = meter.prefix(.deci).pow(3);
+
+    // Speed
+    /// kn
+    pub const knot = nautical_mile.div(hour);
+
+    /// C
+    pub const coulomb = second.mul(ampere);
+    /// V
+    pub const volt = joule.div(coulomb);
+    /// F
+    pub const farad = coulomb.div(volt);
+    /// Ohm
+    pub const ohm = volt.div(ampere);
+    /// S
+    pub const siemens = ampere.div(volt);
+    /// Wb
+    pub const weber = joule.div(ampere);
+    /// H
+    pub const henry = weber.div(second);
 };
 
 test Unit {

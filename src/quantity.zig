@@ -58,23 +58,22 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
 
 /// Generate default quantities from default units
 fn Quantities(T: type) type {
-    const declarations = @typeInfo(unit_namespace.units).@"struct".decls;
-    var fields: [declarations.len]std.builtin.Type.StructField = undefined;
-    for (&fields, declarations) |*field, decl| {
-        field.name = decl.name;
-        field.type = type;
-        field.is_comptime = true;
-        field.alignment = @alignOf(T);
-        field.default_value_ptr = &Quantity(@field(unit_namespace.units, decl.name), T);
+    const units = @typeInfo(unit_namespace.units).@"struct".decls;
+    var fields: [units.len]std.builtin.Type.StructField = undefined;
+    for (&fields, units) |*quantity, unit| {
+        quantity.name = unit.name;
+        quantity.type = type;
+        quantity.is_comptime = true;
+        quantity.alignment = @alignOf(T);
+        quantity.default_value_ptr = &Quantity(@field(unit_namespace.units, unit.name), T);
     }
-    const s: std.builtin.Type.Struct = .{
+    const result: std.builtin.Type = .{ .@"struct" = .{
         .layout = .auto,
         .fields = &fields,
         .decls = &.{},
         .is_tuple = false,
-    };
-    const t: std.builtin.Type = .{ .@"struct" = s };
-    return @Type(t);
+    } };
+    return @Type(result);
 }
 
 /// To see the list of quantities, refer to the list of units in the `units` namespace

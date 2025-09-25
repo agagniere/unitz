@@ -152,58 +152,80 @@ pub fn UnitzContext(comptime _builtin_identifiers: type) type {
 pub inline fn evalUnit(comptime expr: []const u8, inputs: anytype) type {
     const u = unitz.units;
     const ctx = unitzContext(.{
+        // Distance
         .m = u.meter,
-        .s = u.second,
-        .kg = u.kilogram,
-        .A = u.ampere,
-        .K = u.kelvin,
+        .inch = u.inch,
+        .ft = u.foot,
+        .yd = u.yard,
+        .mi = u.mile,
+        .nmi = u.nautical_mile,
+        .fur = u.furlong,
 
+        // Angle
+        .rad = u.radian,
+        .rev = u.revolution,
+        .deg = u.arcdegree,
+
+        // Duration
+        .s = u.second,
+        .min = u.minute,
+        .h = u.hour,
+        .d = u.day,
+        .wk = u.week,
+
+        // Mass
+        .kg = u.kilogram,
         .g = u.gram,
         .t = u.tonne,
+        .oz = u.ounce,
+        .lb = u.pound,
+        .slug = u.slug,
+
+        // Electric current
+        .A = u.ampere,
+
+        // Temperature
+        .K = u.kelvin,
+
+        // Frequency
+        .Hz = u.hertz,
+
+        // Force
+        .N = u.newton,
+        .lbf = u.pound_force,
+
+        // Pressure
+        .Pa = u.pascal,
+        .bar = u.bar,
+        .at = u.technical_atmosphere,
+        .atm = u.standard_atmosphere,
+        .Torr = u.torr,
+
+        // Energy
+        .J = u.joule,
+        .cal = u.calorie,
+
+        // Power
+        .W = u.watt,
+        .hp = u.imperial_horsepower,
+
+        // Magnetic flux density
+        .T = u.tesla,
+        .G = u.gauss,
+
+        // Volume
         .l = u.liter,
 
-        .Hz = u.hertz,
-        .N = u.newton,
-        .Pa = u.pascal,
-        .J = u.joule,
-        .W = u.watt,
+        // Speed
+        .kn = u.knot,
+
         .C = u.coulomb,
         .V = u.volt,
         .F = u.farad,
         .Ohm = u.ohm,
         .S = u.siemens,
         .Wb = u.weber,
-        .T = u.tesla,
         .H = u.henry,
-
-        .min = u.minute,
-        .h = u.hour,
-        .d = u.day,
-        .wk = u.week,
-
-        .rad = u.radian,
-        .rev = u.revolution,
-        .deg = u.arcdegree,
-
-        .G = u.gauss,
-        .cal = u.calorie,
-        .ft = u.foot,
-        .fur = u.furlong,
-        .hp = u.imperial_horsepower,
-        .inch = u.inch,
-        .kn = u.knot,
-        .lb = u.pound,
-        .lbf = u.pound_force,
-        .mi = u.mile,
-        .nmi = u.nautical_mile,
-        .oz = u.ounce,
-        .slug = u.slug,
-        .yd = u.yard,
-
-        .bar = u.bar,
-        .at = u.technical_atmosphere,
-        .atm = u.standard_atmosphere,
-        .Torr = u.torr,
     });
     return comath.eval(expr, ctx, inputs) catch unreachable;
 }
