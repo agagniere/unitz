@@ -97,8 +97,9 @@ pub fn Unit(
 pub const units = struct {
     pub const one = Unit(0, 0, 0, 0, 0, 1.0);
     pub const radian = one;
-    pub const turn = radian.scale(2 * std.math.pi);
-    pub const arcdegree = turn.scale(1.0 / 360.0);
+    pub const semicircle = radian.scale(std.math.pi);
+    pub const revolution = semicircle.scale(2);
+    pub const arcdegree = semicircle.scale(1.0 / 180.0);
 
     pub const meter = Unit(1, 0, 0, 0, 0, 1.0);
     pub const second = Unit(0, 1, 0, 0, 0, 1.0);
@@ -140,11 +141,18 @@ pub const units = struct {
     pub const dram = gram.scale(1.771_845_195_312_5);
     pub const ounce = dram.scale(16.0);
     pub const pound = ounce.scale(16.0);
+    pub const slug = pound.scale(32.174_05);
+    pub const pound_force = slug.mul(foot).div(second.pow(2));
 
     pub const knot = nautical_mile.div(hour);
     pub const imperial_horsepower = watt.scale(745.699_871_582_270_22);
     pub const gauss = tesla.scale(1e-4);
     pub const calorie = joule.scale(4.184);
+
+    pub const bar = pascal.prefix(.kilo).scale(100);
+    pub const technical_atmosphere = pascal.scale(98_066.5);
+    pub const standard_atmosphere = pascal.scale(101325);
+    pub const torr = standard_atmosphere.scale(1.0 / 760.0);
 };
 
 test Unit {

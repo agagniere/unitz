@@ -85,18 +85,18 @@ pub fn main() void {
 
 ## Advanced example
 
+We redefine slug and pound-force to show how it can be done
 ```zig
 const unitz = @import("unitz");
 
 const slug = unitz.evalUnit("32.174_049 * lb", .{});
-const lbf = unitz.evalQuantity(f32, "ft * slug / s^2", .{ .slug = slug });
-const @"lbf.s" = unitz.evalQuantity(f32, "lbf * s", .{ .lbf = lbf.unit });
+const lbf = unitz.evalQuantity(f32, "ft * my_slug / s^2", .{ .my_slug = slug });
+const @"lbf.s" = unitz.evalQuantity(f32, "my_lbf * s", .{ .my_lbf = lbf.unit });
 const @"N.s" = unitz.evalQuantity(f32, "N * s", .{});
 const @"μs" = unitz.evalQuantity(f32, "us", .{});
 
 fn compute_impulse(force: lbf, delta: @"μs") @"lbf.s" {
-    return force.mul(delta).to(@"lbf.s"); // we need to convert from lbf.us to lbf.s, if we forget, a \
-compilation error occurs
+    return force.mul(delta).to(@"lbf.s"); // we need to convert from lbf.us to lbf.s, if we forget, a compilation error occurs
 }
 
 fn compute_trajectory(impulse: @"N.s") void {
@@ -107,8 +107,7 @@ pub fn main() void {
     const force = lbf.init(123.0);
     const delta = @"μs".init(45.0);
 
-    compute_trajectory(compute_impulse(force, delta)); // compilation error ! Adding .to(@"N.s") will \
-fix it
+    compute_trajectory(compute_impulse(force, delta)); // compilation error ! Adding .to(@"N.s") will fix it
 }
 ```
 

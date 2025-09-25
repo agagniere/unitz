@@ -182,6 +182,7 @@ pub inline fn evalUnit(comptime expr: []const u8, inputs: anytype) type {
         .wk = u.week,
 
         .rad = u.radian,
+        .rev = u.revolution,
         .deg = u.arcdegree,
 
         .G = u.gauss,
@@ -192,10 +193,17 @@ pub inline fn evalUnit(comptime expr: []const u8, inputs: anytype) type {
         .inch = u.inch,
         .kn = u.knot,
         .lb = u.pound,
+        .lbf = u.pound_force,
         .mi = u.mile,
         .nmi = u.nautical_mile,
         .oz = u.ounce,
+        .slug = u.slug,
         .yd = u.yard,
+
+        .bar = u.bar,
+        .at = u.technical_atmosphere,
+        .atm = u.standard_atmosphere,
+        .Torr = u.torr,
     });
     return comath.eval(expr, ctx, inputs) catch unreachable;
 }
@@ -228,7 +236,7 @@ test UnitzContext {
 
 test evalQuantity {
     const slug = evalUnit("32.174_049 * lb", .{});
-    const lbf = evalQuantity(f32, "ft * slug / s^2", .{ .slug = slug });
+    const lbf = evalQuantity(f32, "ft * my_slug / s^2", .{ .my_slug = slug });
     const centinewton = evalQuantity(f32, "cN", .{});
 
     const one_lbf: lbf = .init(1);
