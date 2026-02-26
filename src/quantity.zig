@@ -14,6 +14,10 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
             return .{ .value = value };
         }
 
+        pub fn from(value: anytype) Self {
+            return value.to(Self);
+        }
+
         pub fn val(self: Self) T {
             return self.value;
         }
