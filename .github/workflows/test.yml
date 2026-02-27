@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        zig: ["master", "0.14.1"]
+        zig: ["0.15.2", "0.14.1"]
         exclude:
           - os: macos-latest
             zig: 0.14.1
