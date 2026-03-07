@@ -263,5 +263,5 @@ test evalQuantity {
     const centinewton = evalQuantity(f32, "cN", .{});
 
     const one_lbf: lbf = .init(1);
-    try std.testing.expectApproxEqAbs(444.822_161_5, one_lbf.to_val(centinewton), 0.000_000_1);
+    try std.testing.expectApproxEqAbs(444.822_161_5, one_lbf.toVal(centinewton), 0.000_000_1);
 }
