@@ -7,6 +7,7 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
         value: T,
 
         pub const unit = _unit;
+        pub const storage = T;
 
         const Self = @This();
 
@@ -15,6 +16,7 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
         }
 
         pub fn from(value: anytype) Self {
+            comptime std.debug.assert(value.storage == Self.storage);
             return value.to(Self);
         }
 
@@ -47,6 +49,7 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
         }
 
         pub inline fn to(self: Self, dest: type) dest {
+            comptime std.debug.assert(Self.storage == dest.storage);
             const unit_from = Self.unit;
             const unit_to = dest.unit;
             comptime if (!unit_from.is_compatible(unit_to)) @compileError("Units are only interconvertible if they measure the same kind of dimension");
@@ -61,6 +64,10 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
 
         pub inline fn toVal(self: Self, dest: type) T {
             return self.to(dest).val();
+        }
+
+        pub inline fn floatCast(self: Self, dest: type) Quantity(Self.unit, dest) {
+            return .{ .value = @floatCast(self.value) };
         }
     };
 }
@@ -159,4 +166,17 @@ test Quantity {
 
     try std.testing.expectApproxEqAbs(33_000.0, one_hp.toVal(@"ft.lbf/min"), 0.001);
     try std.testing.expectApproxEqAbs(745.699_871_582, one_hp.toVal(W), 0.000_1);
+
+    // Convert pressure
+    const u_64 = quantities(f64);
+    const atm32 = u.standard_atmosphere;
+    const atm64 = u_64.standard_atmosphere;
+    const @"lb/ft2 32" = Quantity(lbf.unit.div(ft.unit.pow(2)), f32);
+    const @"lb/ft2 64" = Quantity(lbf.unit.div(ft.unit.pow(2)), f64);
+
+    const one_atm_32: atm32 = .init(1);
+    const one_atm_64: atm64 = one_atm_32.floatCast(f64);
+
+    try std.testing.expectApproxEqAbs(2116, one_atm_64.toVal(@"lb/ft2 64"), 0.3);
+    try std.testing.expectApproxEqAbs(2116, one_atm_64.floatCast(f32).toVal(@"lb/ft2 32"), 0.3);
 }
