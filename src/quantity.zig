@@ -16,7 +16,7 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
         }
 
         pub fn from(value: anytype) Self {
-            comptime std.debug.assert(value.storage == Self.storage);
+            comptime std.debug.assert(@TypeOf(value).storage == Self.storage);
             return value.to(Self);
         }
 
