@@ -7,7 +7,8 @@ Achieve compile-time unit correctness and avoid runtime surprises.
 Use units as types, to document your functions, and convert to units of the same dimension:
 
 ```zig
-const units = @import("unitz").quantities(f32);
+const unitz = @import("unitz");
+const units = unitz.quantities(f32);
 
 const m = units.meter;
 const s = units.second;
@@ -16,11 +17,11 @@ const @"km/h" = unitz.evalQuantity(f32, "km / h", .{});
 
 fn aircraft_speed(distance: m, duration: s) kt {
 	const speed = distance.div(duration); // value is in m/s
-	const result = speed.to(kt);
+	const result: kt = .from(speed); // convert to target unit
 	std.debug.print("Speed: {} m/s = {} kt = {} km/h\n", .{
 		speed.val(),
 		result.val(),
-		speed.to_val(@"km/h"),
+		speed.toVal(@"km/h"),
 	});
 	return result;
 }
@@ -32,7 +33,7 @@ A compilation error occurs when trying to perform an invalid conversion:
 const J = units.joule;
 const hp = units.imperial_horsepower;
 
-const engine_power = hp.init(130);
+const engine_power: hp = .init(130);
 const energy = engine_power.to(J);
 ```
 Will result in the compilation error:
@@ -76,9 +77,9 @@ fn body_mass_index(height: m, weight: kg) @"kg/m²" {
 }
 
 pub fn main() void {
-	const height = cm.init(162);
-	const weight = lb.init(124);
-	const bmi = body_mass_index(height.to(m), weight.to(kg));
+	const height: cm = .init(162);
+	const weight: lb = .init(124);
+	const bmi = body_mass_index(.from(height), .from(weight));
 	std.debug.print("BMI: {}", .{bmi.val()});
 }
 ```
@@ -96,7 +97,8 @@ const @"N.s" = unitz.evalQuantity(f32, "N * s", .{});
 const @"μs" = unitz.evalQuantity(f32, "us", .{});
 
 fn compute_impulse(force: lbf, delta: @"μs") @"lbf.s" {
-    return force.mul(delta).to(@"lbf.s"); // we need to convert from lbf.us to lbf.s, if we forget, a compilation error occurs
+    return .from(force.mul(delta)); // The .from converts to the target unit
+    // return force.mul(delta).to(@"lbf.s"); // equivalent
 }
 
 fn compute_trajectory(impulse: @"N.s") void {
@@ -107,7 +109,10 @@ pub fn main() void {
     const force = lbf.init(123.0);
     const delta = @"μs".init(45.0);
 
-    compute_trajectory(compute_impulse(force, delta)); // compilation error ! Adding .to(@"N.s") will fix it
+    compute_trajectory(compute_impulse(force, delta)); // compilation error !
+    // Adding .to(@"N.s") or using .from(...) will fix it:
+    // compute_trajectory(compute_impulse(force, delta).to(@"N.s"));
+    // compute_trajectory(.from(compute_impulse(force, delta)));
 }
 ```
 
