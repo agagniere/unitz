@@ -52,7 +52,7 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
             comptime std.debug.assert(Self.storage == dest.storage);
             const unit_from = Self.unit;
             const unit_to = dest.unit;
-            comptime if (!unit_from.is_compatible(unit_to)) @compileError("Units are only interconvertible if they measure the same kind of dimension");
+            comptime if (!unit_from.isCompatible(unit_to)) @compileError("Units are only interconvertible if they measure the same kind of dimension");
             const factor = unit_from.factor / unit_to.factor;
             return dest.init(self.value * factor);
         }

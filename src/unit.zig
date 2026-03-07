@@ -5,12 +5,12 @@ const Prefix = prefix_namespace.Prefix;
 const prefixFactor = prefix_namespace.prefixFactor;
 
 /// Raise x to the power n
-fn comptime_pow(comptime x: comptime_float, comptime n: comptime_int) comptime_float {
+fn comptimePow(comptime x: comptime_float, comptime n: comptime_int) comptime_float {
     if (n < 0) unreachable;
     return switch (n) {
         0 => 1.0,
         1 => x,
-        else => x * comptime_pow(x, n - 1),
+        else => x * comptimePow(x, n - 1),
     };
 }
 
@@ -65,7 +65,7 @@ pub fn Unit(
                 Self.kilogram * n,
                 Self.ampere * n,
                 Self.kelvin * n,
-                comptime_pow(Self.factor, n),
+                comptimePow(Self.factor, n),
             );
         }
 
@@ -87,7 +87,7 @@ pub fn Unit(
         }
 
         /// Two units are compatible if they measure the same kind of dimension
-        pub fn is_compatible(other: type) bool {
+        pub fn isCompatible(other: type) bool {
             return Self.meter == other.meter and Self.second == other.second and Self.kilogram == other.kilogram and Self.ampere == other.ampere and Self.kelvin == other.kelvin;
         }
     };
