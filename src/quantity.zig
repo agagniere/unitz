@@ -57,11 +57,6 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
             return dest.init(self.value * factor);
         }
 
-        /// DEPRECATED
-        pub inline fn to_val(self: Self, dest: type) T {
-            return self.to(dest).val();
-        }
-
         pub inline fn toVal(self: Self, dest: type) T {
             return self.to(dest).val();
         }

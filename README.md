@@ -39,8 +39,8 @@ const energy = engine_power.to(J);
 Will result in the compilation error:
 ```zig
 src/root.zig:233:61: error: Units are only interconvertible if they measure the same kind of dimension
-            comptime if (!unit_from.is_compatible(unit_to)) @compileError("Units are only interconvertible if they measure the same kind of dimension");
-                                                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            comptime if (!unit_from.isCompatible(unit_to)) @compileError("Units are only interconvertible if they measure the same kind of dimension");
+                                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 foo.zig:29:35: note: called from here
     const energy = engine_power.to(J);
                    ~~~~~~~~~~~~~~~^~~
