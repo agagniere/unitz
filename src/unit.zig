@@ -90,6 +90,17 @@ pub fn Unit(
         pub fn isCompatible(other: type) bool {
             return Self.meter == other.meter and Self.second == other.second and Self.kilogram == other.kilogram and Self.ampere == other.ampere and Self.kelvin == other.kelvin;
         }
+
+        pub fn sqrt() type {
+            return Unit(
+                @divExact(Self.meter, 2),
+                @divExact(Self.second, 2),
+                @divExact(Self.kilogram, 2),
+                @divExact(Self.ampere, 2),
+                @divExact(Self.kelvin, 2),
+                @sqrt(Self.factor),
+            );
+        }
     };
 }
 
@@ -239,4 +250,6 @@ test Unit {
     try comptime std.testing.expectEqual(u.meter.scale(0.9144), u.yard);
 
     try comptime std.testing.expectEqual(u.meter.scale(1000), u.meter.prefix(.kilo));
+
+    try comptime std.testing.expectEqual(u.joule.div(u.kilogram).sqrt(), u.meter.div(u.second));
 }

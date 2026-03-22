@@ -64,6 +64,10 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
         pub inline fn floatCast(self: Self, dest: type) Quantity(Self.unit, dest) {
             return .{ .value = @floatCast(self.value) };
         }
+
+        pub fn sqrt(self: Self) Quantity(Self.unit.sqrt(), Self.storage) {
+            return .{ .value = @sqrt(self.value) };
+        }
     };
 }
 
