@@ -68,6 +68,10 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
         pub fn sqrt(self: Self) Quantity(Self.unit.sqrt(), Self.storage) {
             return .{ .value = @sqrt(self.value) };
         }
+
+        pub fn scale(self: Self, scalar: Self.storage) Self {
+            return .{ .value = self.value * scalar };
+        }
     };
 }
 
