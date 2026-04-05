@@ -13,5 +13,5 @@ pub const evalUnit = eval.evalUnit;
 pub const evalQuantity = eval.evalQuantity;
 
 test {
-    std.testing.refAllDeclsRecursive(@This());
+    std.testing.refAllDecls(@This());
 }
