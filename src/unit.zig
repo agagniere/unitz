@@ -218,6 +218,12 @@ pub const units = struct {
     /// kn
     pub const knot = nautical_mile.div(hour);
 
+    // Viscosity (dynamic/absolute)
+    /// Pl
+    pub const poiseuille = pascal.mul(second);
+    /// P
+    pub const poise = poiseuille.prefix(.deci);
+
     /// C
     pub const coulomb = second.mul(ampere);
     /// V

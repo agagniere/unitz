@@ -220,6 +220,10 @@ pub inline fn evalUnit(comptime expr: []const u8, inputs: anytype) type {
         // Speed
         .kn = u.knot,
 
+        // Viscosity
+        .Pl = u.poiseuille,
+        .P = u.poise,
+
         .C = u.coulomb,
         .V = u.volt,
         .F = u.farad,
