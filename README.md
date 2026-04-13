@@ -2,6 +2,19 @@
 
 Achieve compile-time unit correctness and avoid runtime surprises.
 
+## Status
+
+| Architecture \ OS | Linux | MacOS |
+|:------------------|:-----:|:-----:|
+| `x86_64`          | ✅    | ✅    |
+| `arm64`           | ✅    | ✅    |
+
+| Branch name | Zig version        |
+|:------------|:-------------------|
+| `master`    | `master`           |
+| `zig-0.15`  | `0.14.x`, `0.15.x` |
+| `zig-0.13`  | `0.13.x`           |
+
 ## Showcase
 
 Use units as types, to document your functions, and convert to units of the same dimension:
