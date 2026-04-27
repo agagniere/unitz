@@ -11,7 +11,7 @@ Achieve compile-time unit correctness and avoid runtime surprises.
 
 | Branch name | Zig version        |
 |:------------|:-------------------|
-| `master`    | `master`           |
+| `master`    | `0.16.x`, `master` |
 | `zig-0.15`  | `0.14.x`, `0.15.x` |
 | `zig-0.13`  | `0.13.x`           |
 
@@ -51,10 +51,10 @@ const energy = engine_power.to(J);
 ```
 Will result in the compilation error:
 ```zig
-src/root.zig:233:61: error: Units are only interconvertible if they measure the same kind of dimension
+src/quantity.zig:55:60: error: Units are only interconvertible if they measure the same kind of dimension
             comptime if (!unit_from.isCompatible(unit_to)) @compileError("Units are only interconvertible if they measure the same kind of dimension");
                                                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-foo.zig:29:35: note: called from here
+foo.zig:8:35: note: called inline here
     const energy = engine_power.to(J);
                    ~~~~~~~~~~~~~~~^~~
 ```
@@ -161,5 +161,5 @@ open "http://localhost:8000"
 ## Bump dependencies
 
 ```shell
-zig fetch --save git+https://github.com/InKryption/comath#main
+zig fetch --save git+https://codeberg.org/InKryption/comath#main
 ```

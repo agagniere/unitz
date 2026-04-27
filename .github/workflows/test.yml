@@ -11,10 +11,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        zig: ["0.15.2", "0.14.1"]
+        zig: ["0.16.0"]
         exclude:
           - os: macos-latest
-            zig: 0.14.1
+            zig: master
     runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v4

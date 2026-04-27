@@ -1,14 +1,16 @@
 .{
     .name = .unitz,
-    .version = "0.2.0",
+    .version = "0.2.1",
     .fingerprint = 0x906cccede424404a,
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.16.0",
+
     .dependencies = .{
         .comath = .{
             .url = "git+https://codeberg.org/agagniere/comath?ref=zig-master#d5fa4cca8e498ed617e0cae45af1893ce2016ff2",
             .hash = "comath-0.1.0-wKZ2n5DsAQCeieApiG-iq_dzKZxJR2tYMvOEt77R5u19",
         },
     },
+
     .paths = .{
         "build.zig",
         "build.zig.zon",
