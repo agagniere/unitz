@@ -12,7 +12,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         zig: ["0.16.0"]
-        exclude:
+        include:
           - os: macos-latest
             zig: master
     runs-on: ${{matrix.os}}
