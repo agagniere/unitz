@@ -10,3 +10,5 @@ pub fn main() void {
 
 // Expected error:
 //   src/quantity.zig:43:17: error: from() expects a Quantity, got 'comptime_float'
+//   error_from_invalid_source.zig:7:29: note: called inline here
+//       const m: u.meter = .from(1.0);

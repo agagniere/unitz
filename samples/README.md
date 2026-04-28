@@ -21,6 +21,7 @@ default build (they are all expected to fail to compile).
 | [error_to_storage_mismatch.zig](error_to_storage_mismatch.zig)         | `.to()` between `Quantity` types whose storage differs |
 | [error_from_invalid_source.zig](error_from_invalid_source.zig)         | `.from()` called with a raw value instead of a `Quantity` |
 | [error_from_storage_mismatch.zig](error_from_storage_mismatch.zig)     | `.from()` between `Quantity` types whose storage differs |
+| [error_from_incompatible_units.zig](error_from_incompatible_units.zig) | `.from()` between units of different dimensions |
 | [error_mul_invalid_argument.zig](error_mul_invalid_argument.zig)       | `.mul()` with a raw scalar (use `.scale()` instead) |
 | [error_div_invalid_argument.zig](error_div_invalid_argument.zig)       | `.div()` with a raw scalar (use `.scale()` instead) |
 | [error_sqrt_odd_dimension.zig](error_sqrt_odd_dimension.zig)           | `.sqrt()` of a unit whose dimension exponents are not all even |

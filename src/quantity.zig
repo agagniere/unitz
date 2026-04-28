@@ -1,6 +1,28 @@
 const std = @import("std");
 const unit_namespace = @import("unit.zig");
 
+/// True iff `T` is a `Quantity` instantiation.
+fn isQuantity(comptime T: type) bool {
+    return switch (@typeInfo(T)) {
+        .@"struct" => blk: {
+            if (!@hasDecl(T, "unit") or !@hasDecl(T, "storage")) break :blk false;
+            break :blk T == Quantity(T.unit, T.storage);
+        },
+        else => false,
+    };
+}
+
+/// Return type of `Quantity.mul` / `Quantity.div`, with a clear `@compileError`
+/// if `Other` is not a `Quantity`.
+fn BinopReturnType(comptime A: type, comptime Other: type, comptime op: enum { mul, div }) type {
+    if (!isQuantity(Other))
+        @compileError(@tagName(op) ++ "() expects a Quantity, got '" ++ @typeName(Other) ++ "' (use scale() for a plain scalar)");
+    return Quantity(switch (op) {
+        .mul => A.unit.mul(Other.unit),
+        .div => A.unit.div(Other.unit),
+    }, A.storage);
+}
+
 /// A quantity is a measure expressed relatively to its unit
 pub fn Quantity(comptime _unit: type, comptime T: type) type {
     return struct {
@@ -15,8 +37,12 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
             return .{ .value = value };
         }
 
-        pub fn from(value: anytype) Self {
-            comptime std.debug.assert(@TypeOf(value).storage == Self.storage);
+        pub inline fn from(value: anytype) Self {
+            const Other = @TypeOf(value);
+            comptime if (!isQuantity(Other))
+                @compileError("from() expects a Quantity, got '" ++ @typeName(Other) ++ "'");
+            comptime if (Other.storage != Self.storage)
+                @compileError("from() requires the source quantity to share the same storage type; convert it first with floatCast()");
             return value.to(Self);
         }
 
@@ -36,11 +62,11 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
             return Self.init(self.value - other.value);
         }
 
-        pub fn mul(self: Self, other: anytype) Quantity(Self.unit.mul(@TypeOf(other).unit), T) {
+        pub fn mul(self: Self, other: anytype) BinopReturnType(Self, @TypeOf(other), .mul) {
             return .{ .value = self.value * other.value };
         }
 
-        pub fn div(self: Self, other: anytype) Quantity(Self.unit.div(@TypeOf(other).unit), T) {
+        pub fn div(self: Self, other: anytype) BinopReturnType(Self, @TypeOf(other), .div) {
             return .{ .value = self.value / other.value };
         }
 
@@ -49,7 +75,10 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
         }
 
         pub inline fn to(self: Self, dest: type) dest {
-            comptime std.debug.assert(Self.storage == dest.storage);
+            comptime if (!isQuantity(dest))
+                @compileError("to() expects a Quantity type, got '" ++ @typeName(dest) ++ "'");
+            comptime if (Self.storage != dest.storage)
+                @compileError("to() requires the destination quantity to share the same storage type; convert it first with floatCast()");
             const unit_from = Self.unit;
             const unit_to = dest.unit;
             comptime if (!unit_from.isCompatible(unit_to)) @compileError("Units are only interconvertible if they measure the same kind of dimension");
