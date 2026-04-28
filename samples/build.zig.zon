@@ -1,0 +1,13 @@
+.{
+    .name = .unitz_samples,
+    .version = "0.0.0",
+    .fingerprint = 0xd0829b74e5a15d97,
+    .minimum_zig_version = "0.16.0",
+    .dependencies = .{
+        .unitz = .{ .path = ".." },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+    },
+}
