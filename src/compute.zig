@@ -31,8 +31,17 @@ pub const ComputeContext = struct {
         return @field(relations, lhs).order(@field(relations, rhs));
     }
 
-    pub const EvalNumberLiteral = comath.ctx.DefaultEvalNumberLiteral;
-    pub const evalNumberLiteral = comath.ctx.defaultEvalNumberLiteral;
+    /// Number literals are dimensionless quantities with `comptime_float` storage,
+    /// so they can transparently coerce to whichever concrete float type they are
+    /// combined with at the binary-op level.
+    pub fn EvalNumberLiteral(comptime src: []const u8) type {
+        _ = src;
+        return unitz.Quantity(unitz.units.one, comptime_float);
+    }
+
+    pub fn evalNumberLiteral(comptime src: []const u8) EvalNumberLiteral(src) {
+        return .{ .value = comath.ctx.defaultEvalNumberLiteral(src) };
+    }
 
     pub const EvalIdent = {};
     pub const evalIdent = {};
@@ -48,9 +57,25 @@ pub const ComputeContext = struct {
         };
     }
 
+    /// When one side has `comptime_float` storage (a literal) and the other has a
+    /// concrete float storage, coerce the literal side to the concrete storage so
+    /// that `Quantity`'s methods (which assume `Self.storage` for the result) work.
+    fn Promoted(comptime A: type, comptime B: type) type {
+        if (A.storage == comptime_float and B.storage != comptime_float)
+            return unitz.Quantity(A.unit, B.storage);
+        return A;
+    }
+
+    inline fn promoted(val: anytype, comptime Other: type) Promoted(@TypeOf(val), Other) {
+        const Self = @TypeOf(val);
+        if (Self.storage == comptime_float and Other.storage != comptime_float)
+            return .{ .value = val.value };
+        return val;
+    }
+
     pub fn EvalBinOp(comptime Lhs: type, comptime op: []const u8, comptime Rhs: type) type {
-        const lhs_undef: Lhs = undefined;
-        const rhs_undef: Rhs = undefined;
+        const lhs_undef: Promoted(Lhs, Rhs) = undefined;
+        const rhs_undef: Promoted(Rhs, Lhs) = undefined;
         return switch (@field(Op, op)) {
             .@"+" => @TypeOf(lhs_undef.add(rhs_undef)),
             .@"-" => @TypeOf(lhs_undef.sub(rhs_undef)),
@@ -60,11 +85,13 @@ pub const ComputeContext = struct {
     }
 
     pub fn evalBinOp(_: ComputeContext, lhs: anytype, comptime op: []const u8, rhs: anytype) !EvalBinOp(@TypeOf(lhs), op, @TypeOf(rhs)) {
+        const L = promoted(lhs, @TypeOf(rhs));
+        const R = promoted(rhs, @TypeOf(lhs));
         return switch (@field(Op, op)) {
-            .@"+" => lhs.add(rhs),
-            .@"-" => lhs.sub(rhs),
-            .@"*" => lhs.mul(rhs),
-            .@"/" => lhs.div(rhs),
+            .@"+" => L.add(R),
+            .@"-" => L.sub(R),
+            .@"*" => L.mul(R),
+            .@"/" => L.div(R),
         };
     }
 };
@@ -122,4 +149,24 @@ test compute {
     const net = compute("a + -b * c", .{ .a = a, .b = b, .c = c });
     try comptime std.testing.expectEqual(m, @TypeOf(net));
     try std.testing.expectEqual(50, net.val());
+
+    // numeric literals: dimensionless Quantity with comptime_float storage
+    const dimensionless = unitz.Quantity(unitz.units.one, comptime_float);
+    const five = compute("2 + 3", .{});
+    try comptime std.testing.expectEqual(dimensionless, @TypeOf(five));
+    try std.testing.expectEqual(5, five.val());
+
+    // literal on either side of mul / div promotes to the quantity's storage
+    const doubled = compute("2 * a", .{ .a = a });
+    try comptime std.testing.expectEqual(m, @TypeOf(doubled));
+    try std.testing.expectEqual(200, doubled.val());
+
+    const half = compute("a / 2", .{ .a = a });
+    try comptime std.testing.expectEqual(m, @TypeOf(half));
+    try std.testing.expectEqual(50, half.val());
+
+    // literal in a larger mixed expression
+    const midpoint = compute("(a + b * c) / 2", .{ .a = a, .b = b, .c = c });
+    try comptime std.testing.expectEqual(m, @TypeOf(midpoint));
+    try std.testing.expectEqual(75, midpoint.val());
 }
