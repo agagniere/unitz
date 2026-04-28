@@ -77,8 +77,11 @@ pub const ComputeContext = struct {
         const lhs_undef: Promoted(Lhs, Rhs) = undefined;
         const rhs_undef: Promoted(Rhs, Lhs) = undefined;
         return switch (@field(Op, op)) {
-            .@"+" => @TypeOf(lhs_undef.add(rhs_undef)),
-            .@"-" => @TypeOf(lhs_undef.sub(rhs_undef)),
+            .@"+", .@"-" => blk: {
+                if (Lhs.unit != Rhs.unit)
+                    @compileError("Quantities can only be added or subtracted if they have the same unit");
+                break :blk Promoted(Lhs, Rhs);
+            },
             .@"*" => @TypeOf(lhs_undef.mul(rhs_undef)),
             .@"/" => @TypeOf(lhs_undef.div(rhs_undef)),
         };
