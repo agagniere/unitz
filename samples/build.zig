@@ -6,6 +6,7 @@ const samples = [_][]const u8{
     "error_to_storage_mismatch",
     "error_from_invalid_source",
     "error_from_storage_mismatch",
+    "error_from_incompatible_units",
     "error_mul_invalid_argument",
     "error_div_invalid_argument",
     "error_sqrt_odd_dimension",

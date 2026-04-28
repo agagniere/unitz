@@ -92,6 +92,12 @@ pub fn Unit(
         }
 
         pub fn sqrt() type {
+            comptime if (@mod(Self.meter, 2) != 0 or
+                @mod(Self.second, 2) != 0 or
+                @mod(Self.kilogram, 2) != 0 or
+                @mod(Self.ampere, 2) != 0 or
+                @mod(Self.kelvin, 2) != 0)
+                @compileError("Unit.sqrt requires every dimension exponent to be even");
             return Unit(
                 @divExact(Self.meter, 2),
                 @divExact(Self.second, 2),

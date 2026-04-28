@@ -12,3 +12,5 @@ pub fn main() void {
 
 // Expected error:
 //   src/quantity.zig:45:17: error: from() requires the source quantity to share the same storage type; convert it first with floatCast()
+//   error_from_storage_mismatch.zig:9:31: note: called inline here
+//       const b: q64.meter = .from(a);
