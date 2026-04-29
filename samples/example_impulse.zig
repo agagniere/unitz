@@ -23,5 +23,5 @@ pub fn main() void {
     const force = lbf.init(123.0);
     const delta = @"μs".init(45.0);
 
-    compute_trajectory(.from(compute_impulse(force, delta)));
+    compute_trajectory(compute_impulse(force, delta).to(@"N.s"));
 }

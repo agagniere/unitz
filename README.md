@@ -92,7 +92,7 @@ fn body_mass_index(height: m, weight: kg) @"kg/m²" {
 pub fn main() void {
 	const height: cm = .init(162);
 	const weight: lb = .init(124);
-	const bmi = body_mass_index(.from(height), .from(weight));
+	const bmi = body_mass_index(height.to(m), weight.to(kg));
 	std.debug.print("BMI: {}", .{bmi.val()});
 }
 ```
@@ -123,9 +123,9 @@ pub fn main() void {
     const delta = @"μs".init(45.0);
 
     compute_trajectory(compute_impulse(force, delta)); // compilation error !
-    // Adding .to(@"N.s") or using .from(...) will fix it:
+    // Adding .to(@"N.s") will fix it:
     // compute_trajectory(compute_impulse(force, delta).to(@"N.s"));
-    // compute_trajectory(.from(compute_impulse(force, delta)));
+    // compute_trajectory(.from(compute_impulse(force, delta))); // Also possible
 }
 ```
 

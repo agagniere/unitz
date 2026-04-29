@@ -18,6 +18,6 @@ fn body_mass_index(height: m, weight: kg) @"kg/m²" {
 pub fn main() void {
     const height: cm = .init(162);
     const weight: lb = .init(124);
-    const bmi = body_mass_index(.from(height), .from(weight));
+    const bmi = body_mass_index(height.to(m), weight.to(kg));
     std.debug.print("BMI: {}\n", .{bmi.val()});
 }
