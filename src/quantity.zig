@@ -1,5 +1,6 @@
 const std = @import("std");
 const unit_namespace = @import("unit.zig");
+const eval_namespace = @import("eval.zig");
 
 /// True iff `T` is a `Quantity` instantiation.
 fn isQuantity(comptime T: type) bool {
@@ -104,25 +105,67 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
     };
 }
 
-/// Generate default quantities from default units
+/// Generate default quantities from default units, plus a comptime `eval`
+/// helper bound to the given storage type.
 fn Quantities(T: type) type {
     const decls = @typeInfo(unit_namespace.units).@"struct".decls;
-    var field_names: [decls.len][]const u8 = undefined;
-    var field_attrs: [decls.len]std.builtin.Type.StructField.Attributes = undefined;
-    for (decls, &field_names, &field_attrs) |decl, *name, *attrs| {
-        name.* = decl.name;
-        attrs.* = .{
+
+    const Helpers = struct {
+        /// Build a Quantity type from a unit expression, with the storage `T`
+        /// captured from the surrounding `Quantities(T)`. Pass `.{}` for `inputs`
+        /// when the expression contains no user-defined identifiers.
+        fn eval(comptime expr: []const u8, inputs: anytype) type {
+            return Quantity(eval_namespace.evalUnit(expr, inputs), T);
+        }
+    };
+
+    const N = decls.len + 1;
+    var field_names: [N][]const u8 = undefined;
+    var field_types: [N]type = undefined;
+    var field_attrs: [N]std.builtin.Type.StructField.Attributes = undefined;
+
+    for (decls, 0..) |decl, i| {
+        field_names[i] = decl.name;
+        field_types[i] = type;
+        field_attrs[i] = .{
             .@"comptime" = true,
             .@"align" = @alignOf(T),
             .default_value_ptr = &Quantity(@field(unit_namespace.units, decl.name), T),
         };
     }
-    return @Struct(.auto, null, &field_names, &@splat(type), &field_attrs);
+
+    field_names[decls.len] = "eval";
+    field_types[decls.len] = @TypeOf(Helpers.eval);
+    field_attrs[decls.len] = .{
+        .@"comptime" = true,
+        .default_value_ptr = &Helpers.eval,
+    };
+
+    return @Struct(.auto, null, &field_names, &field_types, &field_attrs);
 }
 
 /// To see the list of quantities, refer to the list of units in the `units` namespace
 pub fn quantities(T: type) Quantities(T) {
     return .{};
+}
+
+test "quantities(T).eval shorthand" {
+    const u = quantities(f32);
+
+    // Common case: no custom identifiers
+    const kilowatthour = u.eval("kW * h", .{});
+    try comptime std.testing.expectEqual(eval_namespace.evalQuantity(f32, "kW * h", .{}), kilowatthour);
+
+    const energy: kilowatthour = .init(2.5);
+    try std.testing.expectEqual(2.5, energy.val());
+
+    // Advanced case: pass user-defined identifiers
+    const slug = eval_namespace.evalUnit("32.174_049 * lb", .{});
+    const lbf = u.eval("ft * my_slug / s^2", .{ .my_slug = slug });
+    try comptime std.testing.expectEqual(
+        eval_namespace.evalQuantity(f32, "ft * my_slug / s^2", .{ .my_slug = slug }),
+        lbf,
+    );
 }
 
 test Quantity {
