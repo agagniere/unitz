@@ -2,13 +2,12 @@
 // return the speed converted to knots, and print every form along the way.
 
 const std = @import("std");
-const unitz = @import("unitz");
-const units = unitz.quantities(f32);
+const units = @import("unitz").quantities(f32);
 
 const m = units.meter;
 const s = units.second;
 const kt = units.knot;
-const @"km/h" = unitz.evalQuantity(f32, "km / h", .{});
+const @"km/h" = units.eval("km / h", .{});
 
 fn aircraft_speed(distance: m, duration: s) kt {
     const speed = distance.div(duration); // value is in m/s
