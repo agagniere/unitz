@@ -11,4 +11,4 @@ pub fn main() void {
 }
 
 // Expected error:
-//   src/quantity.zig:81:17: error: to() requires the destination quantity to share the same storage type; convert it first with floatCast()
+//   src/quantity.zig:82:17: error: to() requires the destination quantity to share the same storage type; convert it first with floatCast()
