@@ -1,7 +1,6 @@
 // Passing a non-Quantity type as the destination of .to().
 
-const unitz = @import("unitz");
-const u = unitz.quantities(f32);
+const u = @import("unitz").quantities(f32);
 
 pub fn main() void {
     const distance: u.meter = .init(1);
@@ -10,4 +9,4 @@ pub fn main() void {
 }
 
 // Expected error:
-//   src/quantity.zig:79:17: error: to() expects a Quantity type, got 'f32'
+//   src/quantity.zig:80:17: error: to() expects a Quantity type, got 'f32'

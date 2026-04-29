@@ -1,7 +1,6 @@
 // Taking the square root of a unit whose dimension exponents are not all even.
 
-const unitz = @import("unitz");
-const u = unitz.quantities(f32);
+const u = @import("unitz").quantities(f32);
 
 pub fn main() void {
     const length: u.meter = .init(4);
@@ -10,4 +9,4 @@ pub fn main() void {
 }
 
 // Expected error:
-//   src/unit.zig:100:17: error: Unit.sqrt requires every dimension exponent to be even
+//   src/unit.zig:101:17: error: Unit.sqrt requires every dimension exponent to be even
