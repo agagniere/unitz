@@ -20,13 +20,12 @@ Achieve compile-time unit correctness and avoid runtime surprises.
 Use units as types, to document your functions, and convert to units of the same dimension:
 
 ```zig
-const unitz = @import("unitz");
-const units = unitz.quantities(f32);
+const units = @import("unitz").quantities(f32);
 
 const m = units.meter;
 const s = units.second;
 const kt = units.knot;
-const @"km/h" = unitz.evalQuantity(f32, "km / h", .{});
+const @"km/h" = units.eval("km / h", .{});
 
 fn aircraft_speed(distance: m, duration: s) kt {
 	const speed = distance.div(duration); // value is in m/s
@@ -66,10 +65,10 @@ No conversion is done implicitly, the value stored in memory is exactly the one 
 This library does not provide all variations of standard units: meter and hour are provided, but kilometer and kilometer per hour is not. Instead, you can define any unit you want from its definition, using prefixes if needed:
 
 ```zig
-const nanosecond = unitz.evalQuantity(f32, "ns", .{});
-const @"kg/m3" = unitz.evalQuantity(f32, "kg / m^3", .{});
-const kilowatthour = unitz.evalQuantity(f32, "kW * h", .{});
-const Cal = unitz.evalQuantity(f32, "kcal", .{}); // large calorie
+const nanosecond = units.eval("ns", .{});
+const @"kg/m3" = units.eval("kg / m^3", .{});
+const kilowatthour = units.eval("kW * h", .{});
+const Cal = units.eval("kcal", .{}); // large calorie
 ```
 
 ## Simple example
@@ -82,8 +81,8 @@ const q = unitz.quantities(f32);
 const m = q.meter;
 const kg = q.kilogram;
 const lb = q.pound;
-const cm = unitz.evalQuantity(f32, "cm", .{});
-const @"kg/m²" = unitz.evalQuantity(f32, "kg / m^2", .{});
+const cm = q.eval("cm", .{});
+const @"kg/m²" = q.eval("kg / m^2", .{});
 
 fn body_mass_index(height: m, weight: kg) @"kg/m²" {
 	return weight.div(height.pow(2));
@@ -101,13 +100,13 @@ pub fn main() void {
 
 We redefine slug and pound-force to show how it can be done
 ```zig
-const unitz = @import("unitz");
+const u = @import("unitz").quantities(f32);
 
-const slug = unitz.evalUnit("32.174_049 * lb", .{});
-const lbf = unitz.evalQuantity(f32, "ft * my_slug / s^2", .{ .my_slug = slug });
-const @"lbf.s" = unitz.evalQuantity(f32, "my_lbf * s", .{ .my_lbf = lbf.unit });
-const @"N.s" = unitz.evalQuantity(f32, "N * s", .{});
-const @"μs" = unitz.evalQuantity(f32, "us", .{});
+const slug = u.eval("32.174_049 * lb", .{});
+const lbf = u.eval("ft * my_slug / s^2", .{ .my_slug = slug.unit });
+const @"lbf.s" = u.eval("my_lbf * s", .{ .my_lbf = lbf.unit });
+const @"N.s" = u.eval("N * s", .{});
+const @"μs" = u.eval("us", .{});
 
 fn compute_impulse(force: lbf, delta: @"μs") @"lbf.s" {
     return .from(force.mul(delta)); // The .from converts to the target unit
