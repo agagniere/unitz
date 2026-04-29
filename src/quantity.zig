@@ -119,12 +119,23 @@ fn Quantities(T: type) type {
         }
     };
 
-    const N = decls.len + 1;
+    // The `units` namespace also exposes non-type decls (e.g. its own `eval`).
+    // Skip them — only Unit types map to Quantity fields.
+    const N = blk: {
+        var n: usize = 1; // +1 for our own `eval` helper
+        for (decls) |decl| {
+            if (@TypeOf(@field(unit_namespace.units, decl.name)) == type) n += 1;
+        }
+        break :blk n;
+    };
+
     var field_names: [N][]const u8 = undefined;
     var field_types: [N]type = undefined;
     var field_attrs: [N]std.builtin.Type.StructField.Attributes = undefined;
 
-    for (decls, 0..) |decl, i| {
+    var i: usize = 0;
+    for (decls) |decl| {
+        if (@TypeOf(@field(unit_namespace.units, decl.name)) != type) continue;
         field_names[i] = decl.name;
         field_types[i] = type;
         field_attrs[i] = .{
@@ -132,11 +143,12 @@ fn Quantities(T: type) type {
             .@"align" = @alignOf(T),
             .default_value_ptr = &Quantity(@field(unit_namespace.units, decl.name), T),
         };
+        i += 1;
     }
 
-    field_names[decls.len] = "eval";
-    field_types[decls.len] = @TypeOf(Helpers.eval);
-    field_attrs[decls.len] = .{
+    field_names[i] = "eval";
+    field_types[i] = @TypeOf(Helpers.eval);
+    field_attrs[i] = .{
         .@"comptime" = true,
         .default_value_ptr = &Helpers.eval,
     };
