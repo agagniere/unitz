@@ -1,5 +1,6 @@
 const std = @import("std");
 const prefix_namespace = @import("prefix.zig");
+const eval_namespace = @import("eval.zig");
 
 const Prefix = prefix_namespace.Prefix;
 const prefixFactor = prefix_namespace.prefixFactor;
@@ -244,6 +245,12 @@ pub const units = struct {
     pub const weber = joule.div(ampere);
     /// H
     pub const henry = weber.div(second);
+
+    /// Build a Unit type from an expression like `"kg / m^3"`. Pass `.{}`
+    /// for `inputs` when the expression contains no user-defined identifiers.
+    pub fn eval(comptime expr: []const u8, inputs: anytype) type {
+        return eval_namespace.evalUnit(expr, inputs);
+    }
 };
 
 test Unit {
@@ -264,4 +271,9 @@ test Unit {
     try comptime std.testing.expectEqual(u.meter.scale(1000), u.meter.prefix(.kilo));
 
     try comptime std.testing.expectEqual(u.joule.div(u.kilogram).sqrt(), u.meter.div(u.second));
+}
+
+test "units.eval shorthand" {
+    try comptime std.testing.expectEqual(units.meter.div(units.second), units.eval("m / s", .{}));
+    try comptime std.testing.expectEqual(units.joule.prefix(.mega).scale(3.6), units.eval("kW * h", .{}));
 }
