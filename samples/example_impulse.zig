@@ -3,13 +3,13 @@
 // before passing it to a function that expects metric units.
 
 const std = @import("std");
-const unitz = @import("unitz");
+const u = @import("unitz").quantities(f32);
 
-const slug = unitz.evalUnit("32.174_049 * lb", .{});
-const lbf = unitz.evalQuantity(f32, "ft * my_slug / s^2", .{ .my_slug = slug });
-const @"lbf.s" = unitz.evalQuantity(f32, "my_lbf * s", .{ .my_lbf = lbf.unit });
-const @"N.s" = unitz.evalQuantity(f32, "N * s", .{});
-const @"μs" = unitz.evalQuantity(f32, "us", .{});
+const slug = u.eval("32.174_049 * lb", .{});
+const lbf = u.eval("ft * my_slug / s^2", .{ .my_slug = slug.unit });
+const @"lbf.s" = u.eval("my_lbf * s", .{ .my_lbf = lbf.unit });
+const @"N.s" = u.eval("N * s", .{});
+const @"μs" = u.eval("us", .{});
 
 fn compute_impulse(force: lbf, delta: @"μs") @"lbf.s" {
     return .from(force.mul(delta)); // The .from converts to the target unit

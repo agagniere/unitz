@@ -2,14 +2,13 @@
 // length and mass units, return the BMI in kg/m².
 
 const std = @import("std");
-const unitz = @import("unitz");
-const q = unitz.quantities(f32);
+const q = @import("unitz").quantities(f32);
 
 const m = q.meter;
 const kg = q.kilogram;
 const lb = q.pound;
-const cm = unitz.evalQuantity(f32, "cm", .{});
-const @"kg/m²" = unitz.evalQuantity(f32, "kg / m^2", .{});
+const cm = q.eval("cm", .{});
+const @"kg/m²" = q.eval("kg / m^2", .{});
 
 fn body_mass_index(height: m, weight: kg) @"kg/m²" {
     return weight.div(height.pow(2));
