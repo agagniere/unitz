@@ -1,18 +1,32 @@
-# Sample errors
+# Samples
 
-Each `error_*.zig` file in this directory is a short program that, when
-compiled, produces a specific compile-time error from `unitz`. The
-expected error message is written at the bottom of every sample.
+Two kinds of samples live here:
 
-To reproduce one, run from this directory:
+* `example_*.zig` — runnable programs adapted from the README.
+* `error_*.zig`   — short programs that demonstrate a specific
+  compile-time error from `unitz`. The expected error message is written
+  at the bottom of every sample.
+
+Run an example or trigger an error with:
 
 ```sh
+zig build example_aircraft_speed
 zig build error_to_incompatible_units
 ```
 
-`zig build --list-steps` lists every sample as a step. Plain `zig build`
-without a step does nothing — none of the samples are part of the
-default build (they are all expected to fail to compile).
+Plain `zig build` builds and installs every example into `zig-out/bin/`.
+The `error_*` samples are opt-in (they're each expected to fail to
+compile). `zig build --list-steps` lists every sample as a step.
+
+## Examples
+
+| File | Adapted from |
+|---|---|
+| [example_aircraft_speed.zig](example_aircraft_speed.zig)     | README "Showcase" |
+| [example_body_mass_index.zig](example_body_mass_index.zig)   | README "Simple example" |
+| [example_impulse.zig](example_impulse.zig)                   | README "Advanced example" |
+
+## Errors
 
 | File | Demonstrates |
 |---|---|
