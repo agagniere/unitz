@@ -16,6 +16,12 @@ fn comptimePow(comptime x: comptime_float, comptime n: comptime_int) comptime_fl
 }
 
 /// A unit is a quantity in a dimension, used to measure things in the same dimension.
+///
+/// Returns an anonymous struct *type* parameterized by the five SI base
+/// dimension exponents (meter, second, kilogram, ampere, kelvin) and a
+/// scalar `Factor` relative to the SI base. Two `Unit(...)` types are
+/// interconvertible iff their five exponents match; the factor differs and
+/// gives the conversion ratio.
 pub fn Unit(
     comptime Meter: comptime_int,
     comptime Second: comptime_int,
@@ -83,15 +89,28 @@ pub fn Unit(
             );
         }
 
+        /// Apply a metric prefix (e.g. `.kilo`, `.milli`) to this unit.
+        ///
+        /// Equivalent to `scale(prefixFactor(_prefix))`. The result is a unit
+        /// compatible with `Self` (same dimensions, scaled factor).
         pub fn prefix(_prefix: Prefix) type {
             return Self.scale(prefixFactor(_prefix));
         }
 
-        /// Two units are compatible if they measure the same kind of dimension
+        /// Two units are compatible if they measure the same kind of dimension.
+        ///
+        /// Compares only the five dimension exponents, ignoring the factor.
+        /// Compatible units can be converted into one another via
+        /// `Quantity.to`/`from`.
         pub fn isCompatible(other: type) bool {
             return Self.meter == other.meter and Self.second == other.second and Self.kilogram == other.kilogram and Self.ampere == other.ampere and Self.kelvin == other.kelvin;
         }
 
+        /// Define a new unit that is the square root of this one.
+        ///
+        /// Each dimension exponent is divided by two; passing a unit whose
+        /// exponents are not all even raises a comptime error. The factor is
+        /// taken at comptime via `@sqrt`.
         pub fn sqrt() type {
             comptime if (@mod(Self.meter, 2) != 0 or
                 @mod(Self.second, 2) != 0 or
@@ -111,7 +130,12 @@ pub fn Unit(
     };
 }
 
-/// Abstract units used to tag Quantities
+/// Abstract units used to tag Quantities.
+///
+/// Each `pub const X = Unit(...)` here is a Unit *type*, the building block
+/// for `Quantity(X, T)`. The catalog covers SI base/derived units plus
+/// common imperial and CGS units (see source for the full list). Use
+/// `units.eval` to compose new units from a string expression.
 pub const units = struct {
     pub const one = Unit(0, 0, 0, 0, 0, 1.0);
 

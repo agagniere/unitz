@@ -24,7 +24,13 @@ fn BinopReturnType(comptime A: type, comptime Other: type, comptime op: enum { m
     }, A.storage);
 }
 
-/// A quantity is a measure expressed relatively to its unit
+/// A quantity is a measure expressed relatively to its unit.
+///
+/// Wraps a single `T` (typically `f32`/`f64`) tagged with a `Unit` type at
+/// compile time. Arithmetic methods (`add`, `sub`, `mul`, `div`, `pow`,
+/// `sqrt`) return a `Quantity` of the appropriate output unit, computed at
+/// comptime; `to`/`from` convert between compatible units, while
+/// dimension-mismatched conversions are caught as compile errors.
 pub fn Quantity(comptime _unit: type, comptime T: type) type {
     return struct {
         value: T,
@@ -34,10 +40,21 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
 
         const Self = @This();
 
+        /// Construct a Quantity from a value already expressed in this unit.
+        ///
+        /// No conversion is performed — the value is stored verbatim. To
+        /// build a Quantity from another Quantity in a different (but
+        /// compatible) unit, use `from`.
         pub fn init(value: T) Self {
             return .{ .value = value };
         }
 
+        /// Construct from another Quantity, converting to this unit.
+        ///
+        /// The source must be a `Quantity` whose storage matches `Self`; the
+        /// units must be dimensionally compatible. Mismatches are caught as
+        /// compile errors. For different storage types, use `floatCast`
+        /// first.
         pub inline fn from(value: anytype) Self {
             const Other = @TypeOf(value);
             comptime if (!isQuantity(Other))
@@ -47,34 +64,69 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
             return value.to(Self);
         }
 
+        /// Return the underlying numeric value.
+        ///
+        /// The value is in `Self`'s unit; no conversion is performed. To
+        /// read the value in a different compatible unit, use `toVal`.
         pub fn val(self: Self) T {
             return self.value;
         }
 
+        /// Return the negation of this quantity.
+        ///
+        /// Unit and storage are unchanged; only the sign of the value flips.
         pub fn negate(self: Self) Self {
             return Self.init(-self.value);
         }
 
+        /// Add another quantity in the same unit.
+        ///
+        /// The two operands must have the same `Self` type — same unit *and*
+        /// same storage. To add a quantity in a compatible-but-different
+        /// unit, convert it first with `to`.
         pub fn add(self: Self, other: Self) Self {
             return Self.init(self.value + other.value);
         }
 
+        /// Subtract another quantity in the same unit.
+        ///
+        /// Same constraints as `add`: identical `Self` type required.
         pub fn sub(self: Self, other: Self) Self {
             return Self.init(self.value - other.value);
         }
 
+        /// Multiply by another quantity; the result's unit is the product.
+        ///
+        /// E.g. a speed times a duration yields a distance. The other
+        /// operand must be a `Quantity`; for plain scalars use `scale`.
         pub fn mul(self: Self, other: anytype) BinopReturnType(Self, @TypeOf(other), .mul) {
             return .{ .value = self.value * other.value };
         }
 
+        /// Divide by another quantity; the result's unit is the quotient.
+        ///
+        /// E.g. a distance divided by a duration yields a speed. The other
+        /// operand must be a `Quantity`; for plain scalars use `scale` with
+        /// the reciprocal.
         pub fn div(self: Self, other: anytype) BinopReturnType(Self, @TypeOf(other), .div) {
             return .{ .value = self.value / other.value };
         }
 
+        /// Raise to an integer power; the unit's exponents are scaled
+        /// accordingly.
+        ///
+        /// `power` must be a `comptime_int`. The numeric value is raised
+        /// via `std.math.pow`.
         pub fn pow(self: Self, power: comptime_int) Quantity(Self.unit.pow(power), T) {
             return .{ .value = std.math.pow(T, self.value, power) };
         }
 
+        /// Convert to a compatible Quantity type.
+        ///
+        /// `dest` must be a `Quantity` with the same storage type and a
+        /// dimensionally compatible unit. Conversion multiplies by
+        /// `unit_from.factor / unit_to.factor`. Mismatches are caught as
+        /// compile errors.
         pub inline fn to(self: Self, dest: type) dest {
             comptime if (!isQuantity(dest))
                 @compileError("to() expects a Quantity type, got '" ++ @typeName(dest) ++ "'");
@@ -87,18 +139,34 @@ pub fn Quantity(comptime _unit: type, comptime T: type) type {
             return dest.init(self.value * factor);
         }
 
+        /// Convert and return the value, shorthand for `to(dest).val()`.
+        ///
+        /// Useful in print sites where you want the number in a specific
+        /// unit without binding an intermediate `Quantity`.
         pub inline fn toVal(self: Self, dest: type) T {
             return self.to(dest).val();
         }
 
+        /// Cast the storage to a different float type, keeping the unit.
+        ///
+        /// Use to bridge between e.g. an `f32` quantity and an `f64` API,
+        /// since `add`/`to`/`from` require matching storage types.
         pub inline fn floatCast(self: Self, dest: type) Quantity(Self.unit, dest) {
             return .{ .value = @floatCast(self.value) };
         }
 
+        /// Square root; the unit's exponents are halved.
+        ///
+        /// The unit must have all-even dimension exponents (otherwise a
+        /// compile error). The numeric value is taken via `@sqrt`.
         pub fn sqrt(self: Self) Quantity(Self.unit.sqrt(), Self.storage) {
             return .{ .value = @sqrt(self.value) };
         }
 
+        /// Multiply the value by a scalar without changing the unit.
+        ///
+        /// `scalar` is in the same storage type as `Self`. For unit-changing
+        /// products use `mul`.
         pub fn scale(self: Self, scalar: Self.storage) Self {
             return .{ .value = self.value * scalar };
         }
@@ -156,7 +224,30 @@ fn Quantities(T: type) type {
     return @Struct(.auto, null, &field_names, &field_types, &field_attrs);
 }
 
-/// To see the list of quantities, refer to the list of units in the `units` namespace
+/// Comptime namespace bundling every unit from `units` as a `Quantity` type
+/// bound to storage `T`. Each `pub const X = Unit(...)` in `units` becomes a
+/// field `X` of type `Quantity(units.X, T)`:
+///
+/// ```zig
+/// const u = quantities(f32);
+/// const distance: u.meter = .init(1);
+/// const work: u.joule = .init(0);
+/// ```
+///
+/// The namespace also carries an `eval` helper, equivalent to
+/// `Quantity(units.eval(expr, inputs), T)`. Pass `.{}` for `inputs` when the
+/// expression has no user-defined identifiers:
+///
+/// ```zig
+/// pub fn eval(comptime expr: []const u8, inputs: anytype) type
+///
+/// const kilowatthour = u.eval("kW * h", .{});
+/// const @"kg/m3"     = u.eval("kg / m^3", .{});
+/// ```
+///
+/// Because the returned struct is reified at comptime via `@Struct`, neither
+/// the per-unit fields nor `eval` are discoverable through `zig build docs`;
+/// they are documented here for that reason.
 pub fn quantities(T: type) Quantities(T) {
     return .{};
 }
